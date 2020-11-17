@@ -10,7 +10,6 @@
     <div v-for="post in posts" :key="post.id" class="posts__post">
       <div class="posts__post__header row">
         <div class="posts__post__header__delete p-2 col-2">
-          <fa icon="trash-alt"></fa>
         </div>
         <div class="posts__post__header__author col-5 font-weight-bold">
           {{ post.username }}
@@ -34,13 +33,16 @@ export default {
     return {
       posts: [],
       comment: "",
-      discourseHost: 'http://localhost:8888/api/proxy'
+      discourseHost: 'http://localhost:8888/api/proxy',
+      topicResponse: null
     }
   },
   async mounted() {
     const documentId = this.$store.state.document.idAndRouting.id
     const project = this.$store.state.search.index
     let topicResponse = await axios.get(`${this.discourseHost}/${project}/custom-fields-api/topics/${documentId}.json`)
+    this.$set(this, 'topicResponse', topicResponse)
+    this.$set(this, 'posts', topicResponse.data.post_stream.posts)
   },
   methods: {
   }
