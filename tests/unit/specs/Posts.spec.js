@@ -37,7 +37,8 @@ describe('Posts.vue', () => {
   describe('When Posts successfully performs a get request for a topic to retrieve posts', () => {
 
     beforeAll(() => {
-      axios.get.mockResolvedValue({ status: 200, data: dataObject })
+      statusCode = 200
+      axios.get.mockResolvedValue({ status: statusCode, data: dataObject })
     })
 
     afterAll(() => jest.unmock('axios'))
@@ -51,7 +52,7 @@ describe('Posts.vue', () => {
       wrapper = await shallowMount(Posts, {store})
       await wrapper.vm.$nextTick()
 
-      expect(wrapper.vm.topicResponse).toEqual({ status: 200, data: dataObject })
+      expect(wrapper.vm.topicResponse).toEqual({ status: statusCode, data: dataObject })
     })
 
     it('sets the posts based on the data object', async () => {
@@ -66,7 +67,8 @@ describe('Posts.vue', () => {
   describe('When Posts unsuccessfully performs a get request and returns a 404 status code', () => {
 
     beforeAll(() => {
-      axios.get.mockResolvedValue({ status: 404, data: {} })
+      statusCode = 404
+      axios.get.mockResolvedValue({ status: statusCode, data: {} })
     })
 
     afterAll(() => jest.unmock('axios'))
