@@ -41,8 +41,11 @@ export default {
     const documentId = this.$store.state.document.idAndRouting.id
     const project = this.$store.state.search.index
     let topicResponse = await axios.get(`${this.discourseHost}/${project}/custom-fields-api/topics/${documentId}.json`)
-    this.$set(this, 'topicResponse', topicResponse)
-    this.$set(this, 'posts', topicResponse.data.post_stream.posts)
+
+    if (topicResponse.status !== 404) {
+      this.$set(this, 'topicResponse', topicResponse)
+      this.$set(this, 'posts', topicResponse.data.post_stream.posts)
+    }
   },
   methods: {
   }
