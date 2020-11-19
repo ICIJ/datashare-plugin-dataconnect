@@ -106,6 +106,7 @@ describe('Posts.vue', () => {
               id: 1,
               permission: 1,
               name: "Datashare Documents for test-datashare",
+              created_by_dataconnect: true,
               icij_projects_for_category: [
                 {
                   permission_type: 1,

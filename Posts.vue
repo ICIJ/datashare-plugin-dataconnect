@@ -57,9 +57,10 @@ export default {
         name: `Datashare Documents for ${currentDsProject}`,
         color: "BF1E2E",
         text_color: "FFFFFF",
-        permissions: permissions
+        permissions: permissions,
+        created_by_dataconnect: "true"
       }
-      
+
       const axiosResponse = await axios.post(`${this.discourseHost}/${currentDsProject}/categories.json`, data);
       return axiosResponse.data
     },
@@ -71,7 +72,7 @@ export default {
       categories = categories.data.category_list.categories || []
 
       let filtered = filter(categories, function (o) {
-        return ((o.name === `Datashare Documents for ${currentDsProject}`) && (o.icij_projects_for_category[0].group_name === currentDsProject))
+        return (o.created_by_dataconnect)
       })
 
       return filtered.length > 0 ? filtered[0]: null
