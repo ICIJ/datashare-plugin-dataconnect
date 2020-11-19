@@ -48,6 +48,34 @@ export default {
     }
   },
   methods: {
+    async createCategory() {
+      const currentDsProject = this.$store.state.search.index
+
+      let permissions = {}
+      permissions[currentDsProject] = "1"
+      let data = {
+        name: `Datashare Documents for ${currentDsProject}`,
+        color: "BF1E2E",
+        text_color: "FFFFFF",
+        permissions: permissions
+      }
+      
+      const axiosResponse = await axios.post(`${this.discourseHost}/${currentDsProject}/categories.json`, data);
+      return axiosResponse.data
+    },
+
+    async getCategory() {
+      const currentDsProject = this.$store.state.search.index
+      let categories = await axios.get(`${this.discourseHost}/${currentDsProject}/categories.json`)
+
+      categories = categories.data.category_list.categories || []
+
+      let filtered = filter(categories, function (o) {
+        return ((o.name === `Datashare Documents for ${currentDsProject}`) && (o.icij_projects_for_category[0].group_name === currentDsProject))
+      })
+
+      return filtered.length > 0 ? filtered[0]: null
+    }
   }
 }
 </script>
