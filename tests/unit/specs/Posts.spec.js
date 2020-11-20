@@ -34,6 +34,8 @@ describe('Posts.vue', () => {
     }
   }
 
+  afterAll(() => jest.unmock('axios'))
+
   describe('When Posts loads the posts from the Discourse API on mounted', () => {
 
     describe('When Posts successfully performs a get request for a topic to retrieve posts', () => {
@@ -43,24 +45,12 @@ describe('Posts.vue', () => {
         axios.get.mockResolvedValue({ status: statusCode, data: dataObject })
       })
 
-      afterEach(() => jest.unmock('axios'))
-
-      it('performs a get request', () => {
-        wrapper = mount(Posts, {store})
-        expect(axios.get).toBeCalled()
-      })
-
-      it('returns data object containing posts from the Discourse API', async () => {
-        wrapper = await shallowMount(Posts, {store})
-        await wrapper.vm.$nextTick()
-
-        expect(wrapper.vm.topicResponse).toEqual({ status: statusCode, data: dataObject })
-      })
-
       it('sets the posts based on the data object', async () => {
         wrapper = await shallowMount(Posts, {store})
         await wrapper.vm.$nextTick()
 
+        expect(axios.get).toBeCalled()
+        expect(wrapper.vm.topicResponse).toEqual({ status: statusCode, data: dataObject })
         expect(wrapper.vm.posts).toEqual(dataObject.post_stream.posts)
       })
 
@@ -75,22 +65,12 @@ describe('Posts.vue', () => {
 
       afterEach(() => jest.unmock('axios'))
 
-      it('performs a get request', () => {
-        wrapper = shallowMount(Posts, {store})
-        expect(axios.get).toBeCalled()
-      })
-
-      it('does not receive a topicResponse', async () => {
-        wrapper = await shallowMount(Posts, {store})
-        await wrapper.vm.$nextTick()
-
-        expect(wrapper.vm.topicResponse).toBeNull()
-      })
-
       it('does not immediately set posts', async () => {
         wrapper = await shallowMount(Posts, {store})
         await wrapper.vm.$nextTick()
 
+        expect(axios.get).toBeCalled()
+        expect(wrapper.vm.topicResponse).toBeNull()
         expect(wrapper.vm.posts).toHaveLength(0)
       })
     })
@@ -98,7 +78,7 @@ describe('Posts.vue', () => {
   })
 
   describe('When Posts creates a comment', () => {
-    describe('Get category from the Discourse API', () => {
+    describe('getCategory() - Get category from the Discourse API', () => {
       const categoriesData = {
         category_list: {
           categories: [
@@ -115,47 +95,36 @@ describe('Posts.vue', () => {
               ]
             }
           ]
+        },
+        post_stream: {
+          posts: []
         }
       }
 
       beforeEach(() => {
-        statusCode = 200
-        axios.get.mockResolvedValue({ status: statusCode, data: categoriesData })
-      })
-
-      afterEach(() => jest.unmock('axios'))
-
-      it('performs a get request', () => {
-        wrapper = shallowMount(Posts, {store})
-        expect(axios.get).toBeCalled()
+        axios.get.mockResolvedValue({ data: categoriesData })
       })
 
       it('finds an existing category for the relevant project', async () => {
         wrapper = await shallowMount(Posts, {store})
         let response = await wrapper.vm.getCategory()
 
+        expect(axios.get).toBeCalled()
         expect(response).toEqual(categoriesData.category_list.categories[0])
       })
     })
 
-    describe('Uses Discourse API to create a category', () => {
+    describe('createCategory() - Uses Discourse API to create a category', () => {
       const returnData = {
         id: 1,
-        name: 'Datashare Documents for test-datashare'
+        name: 'Datashare Documents for test-datashare',
+        post_stream: {
+          posts: []
+        }
       }
 
       beforeEach(() => {
-        statusCode = 200
-        axios.post.mockResolvedValueOnce({ status: statusCode, data: returnData })
-      })
-
-      afterEach(() => jest.unmock('axios'))
-
-      it('performs a post request', () => {
-        wrapper = shallowMount(Posts, {store})
-        wrapper.vm.createCategory()
-
-        expect(axios.post).toBeCalled()
+        axios.post.mockResolvedValueOnce({ data: returnData })
       })
 
       it('Creates a category', async () => {
@@ -163,11 +132,12 @@ describe('Posts.vue', () => {
 
         let response = await wrapper.vm.createCategory()
 
+        expect(axios.post).toBeCalled()
         expect(response).toEqual(returnData)
       })
     })
 
-    describe('Only creates a category if it does not exist already', () => {
+    describe('setCategory() - Only creates a category if it does not exist already', () => {
       describe('Category exists', () => {
         const categoriesData = {
           category_list: {
@@ -185,27 +155,23 @@ describe('Posts.vue', () => {
                 ]
               }
             ]
+          },
+          post_stream: {
+            posts: []
           }
         }
 
         beforeEach(() => {
-          statusCode = 200
-          axios.get.mockResolvedValueOnce({ status: statusCode, data: categoriesData })
+          axios.get.mockResolvedValueOnce({ data: categoriesData })
         })
 
         afterEach(() => jest.unmock('axios'))
-
-        it('Performs a get request', () => {
-          wrapper = shallowMount(Posts, {store})
-          wrapper.vm.setCategory()
-
-          expect(axios.get).toBeCalled()
-        })
 
         it('Returns the category from the Discourse API', async () => {
           wrapper = await shallowMount(Posts, {store})
           let response = await wrapper.vm.setCategory()
 
+          expect(axios.get).toBeCalled()
           expect(response).toEqual(categoriesData.category_list.categories[0])
         })
       })
@@ -213,33 +179,25 @@ describe('Posts.vue', () => {
       describe('Category does not exist', () => {
         const returnData = {
           id: 2,
-          name: 'Datashare Documents for test-datashare'
+          name: 'Datashare Documents for test-datashare',
+          post_stream: {
+            posts: []
+          }
         }
 
-        beforeEach(() => {
-          axios.post.mockResolvedValueOnce({ status: statusCode, data: returnData })
+        beforeAll(() => {
+          axios.get.mockResolvedValue({ data: returnData })
+          axios.post.mockResolvedValue({ data: returnData })
         })
 
-        afterEach(() => jest.unmock('axios'))
-
-        it('Performs a get request', () => {
-          wrapper = shallowMount(Posts, {store})
-          wrapper.vm.setCategory()
-
-          expect(axios.get).toBeCalled()
-        })
-
-        it('Performs a post request', () => {
-          wrapper = shallowMount(Posts, {store})
-          wrapper.vm.setCategory()
-
-          expect(axios.post).toBeCalled()
-        })
-
-        it('Creates the category', async () => {
+        it('creates the category', async () => {
           wrapper = await shallowMount(Posts, {store})
+          const mockMethod = jest.fn().mockReturnValue(null)
+          wrapper.vm.getCategory = mockMethod
           let response = await wrapper.vm.setCategory()
 
+          expect(mockMethod).toBeCalled()
+          expect(axios.post).toBeCalled()
           expect(response).toEqual(returnData)
         })
       })
