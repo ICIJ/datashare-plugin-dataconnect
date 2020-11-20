@@ -36,16 +36,14 @@ export default {
       comment: '',
       discourseHost: 'http://localhost:8888/api/proxy',
       posts: [],
-      project: this.$store.state.search.index,
-      topicResponse: null
+      project: this.$store.state.search.index
     }
   },
   async mounted() {
     const documentId = this.$store.state.document.idAndRouting.id
-    const topicResponse = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${documentId}.json`)
-    if (topicResponse.status !== 404) {
-      this.$set(this, 'topicResponse', topicResponse)
-      this.$set(this, 'posts', topicResponse.data.post_stream.posts)
+    const response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${documentId}.json`)
+    if (response.status !== 404) {
+      this.$set(this, 'posts', response.data.post_stream.posts)
     }
   },
   methods: {
@@ -70,7 +68,7 @@ export default {
     async getCategory() {
       const categories = await axios.get(`${this.discourseHost}/${this.project}/categories.json`)
       const filtered = filter(get(categories, 'data.category_list.categories', []), 'created_by_dataconnect')
-      return filtered.length > 0 ? filtered[0]: null
+      return filtered.length > 0 ? filtered[0] : null
     }
   }
 }
