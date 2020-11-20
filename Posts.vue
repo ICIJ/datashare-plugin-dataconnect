@@ -48,6 +48,19 @@ export default {
     }
   },
   methods: {
+    async setCategory() {
+      const currentDsProject = this.$store.state.search.index
+
+      let category = this.getCategory()
+
+      if (category === null) {
+        category = this.createCategory()
+        return category
+      } else {
+        return category
+      }
+    },
+
     async createCategory() {
       const currentDsProject = this.$store.state.search.index
 
@@ -61,8 +74,8 @@ export default {
         created_by_dataconnect: "true"
       }
 
-      const axiosResponse = await axios.post(`${this.discourseHost}/${currentDsProject}/categories.json`, data);
-      return axiosResponse.data
+      const response = await axios.post(`${this.discourseHost}/${currentDsProject}/categories.json`, data);
+      return response.data
     },
 
     async getCategory() {
