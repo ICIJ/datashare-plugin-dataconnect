@@ -49,16 +49,8 @@ export default {
   },
   methods: {
     async setCategory() {
-      const currentDsProject = this.$store.state.search.index
-
-      let category = this.getCategory()
-
-      if (category === null) {
-        category = this.createCategory()
-        return category
-      } else {
-        return category
-      }
+      const category = this.getCategory()
+      return category === null ? this.createCategory() : category
     },
 
     async createCategory() {
