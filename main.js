@@ -3,7 +3,7 @@ import Posts from './Posts'
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
     // We register a post-pipeline function for the `document-view-tabs` category
     core.registerPipeline({
-      name: 'document-view-tabs-test',
+      name: 'document-view-tabs',
       category: 'document-view-tabs:post',
       // The function that is applied to the tabs list
       type (tabs, document) {

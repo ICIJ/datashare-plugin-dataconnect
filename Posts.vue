@@ -2,15 +2,17 @@
   <div class="posts p-3">
     <div class="posts__actions">
       <div class="posts__actions__form-group">
-        <textarea class="posts__actions__form-group-textarea form-control rounded-0" v-model="comment"
-                  placeholder="new comment"></textarea>
+        <textarea
+            class="posts__actions__form-group-textarea form-control rounded-0"
+            v-model="comment"
+            placeholder="new comment"
+        ></textarea>
         <button class="posts__actions__form-group__create btn btn-primary">Create</button>
       </div>
     </div>
     <div v-for="post in posts" :key="post.id" class="posts__post">
       <div class="posts__post__header row">
-        <div class="posts__post__header__delete p-2 col-2">
-        </div>
+        <div class="posts__post__header__delete p-2 col-2"></div>
         <div class="posts__post__header__author col-5 font-weight-bold">
           {{ post.username }}
         </div>
@@ -24,24 +26,23 @@
 </template>
 
 <script>
-import filter from 'lodash/filter'
+import { filter, get, isNull } from 'lodash'
 import axios from 'axios'
 
 export default {
   name: 'Posts',
   data() {
     return {
-      posts: [],
-      comment: "",
+      comment: '',
       discourseHost: 'http://localhost:8888/api/proxy',
+      posts: [],
+      project: this.$store.state.search.index,
       topicResponse: null
     }
   },
   async mounted() {
     const documentId = this.$store.state.document.idAndRouting.id
-    const project = this.$store.state.search.index
-    let topicResponse = await axios.get(`${this.discourseHost}/${project}/custom-fields-api/topics/${documentId}.json`)
-
+    const topicResponse = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${documentId}.json`)
     if (topicResponse.status !== 404) {
       this.$set(this, 'topicResponse', topicResponse)
       this.$set(this, 'posts', topicResponse.data.post_stream.posts)
@@ -49,37 +50,26 @@ export default {
   },
   methods: {
     async setCategory() {
-      const category = this.getCategory()
-      return category === null ? this.createCategory() : category
+      const category = await this.getCategory()
+      return isNull(category) ? this.createCategory() : category
     },
-
     async createCategory() {
-      const currentDsProject = this.$store.state.search.index
-
-      let permissions = {}
-      permissions[currentDsProject] = "1"
-      let data = {
-        name: `Datashare Documents for ${currentDsProject}`,
-        color: "BF1E2E",
-        text_color: "FFFFFF",
-        permissions: permissions,
-        created_by_dataconnect: "true"
+      const data = {
+        name: `Datashare Documents for ${this.project}`,
+        color: 'BF1E2E',
+        text_color: 'FFFFFF',
+        permissions: {
+          currentDsProject: 1
+        },
+        created_by_dataconnect: true
       }
-
-      const response = await axios.post(`${this.discourseHost}/${currentDsProject}/categories.json`, data);
+      const response = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
       return response.data
     },
 
     async getCategory() {
-      const currentDsProject = this.$store.state.search.index
-      let categories = await axios.get(`${this.discourseHost}/${currentDsProject}/categories.json`)
-
-      categories = categories.data.category_list.categories || []
-
-      let filtered = filter(categories, function (o) {
-        return (o.created_by_dataconnect)
-      })
-
+      const categories = await axios.get(`${this.discourseHost}/${this.project}/categories.json`)
+      const filtered = filter(get(categories, 'data.category_list.categories', []), 'created_by_dataconnect')
       return filtered.length > 0 ? filtered[0]: null
     }
   }
