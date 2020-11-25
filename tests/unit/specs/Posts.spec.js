@@ -18,21 +18,24 @@ describe('Posts.vue', () => {
   describe('topics', () => {
     it('should retrieve topics if any', async () => {
       const data = {
-        post_stream: {
-          posts: [
-            {
-              id: 1,
-              username: 'testuser',
-              created_at: '2020-10-16T15:21:29.039Z',
-              cooked: '<p>trying to see if it creates a topic</p>'
-            },
-            {
-              id: 2,
-              username: 'testuser2',
-              created_at: '2020-10-16T17:00:29.039Z',
-              cooked: '<p>trying to see if it creates a second topic</p>'
-            }
-          ]
+        topic_view_posts: {
+          id: 1,
+          post_stream: {
+            posts: [
+              {
+                id: 1,
+                username: 'testuser',
+                created_at: '2020-10-16T15:21:29.039Z',
+                cooked: '<p>trying to see if it creates a topic</p>'
+              },
+              {
+                id: 2,
+                username: 'testuser2',
+                created_at: '2020-10-16T17:00:29.039Z',
+                cooked: '<p>trying to see if it creates a second topic</p>'
+              }
+            ]
+          }
         }
       }
       axios.get.mockResolvedValue({ status: 200, data })
@@ -40,7 +43,7 @@ describe('Posts.vue', () => {
       await wrapper.vm.$nextTick()
 
       expect(axios.get).toBeCalled()
-      expect(wrapper.vm.posts).toEqual(data.post_stream.posts)
+      expect(wrapper.vm.posts).toEqual(data.topic_view_posts.post_stream.posts)
     })
 
     it('should return null if no topics', async () => {
@@ -154,6 +157,34 @@ describe('Posts.vue', () => {
       expect(mockMethod).toBeCalled()
       expect(axios.post).toBeCalled()
       expect(response).toEqual(data)
+    })
+  })
+
+  describe('createComment', () => {
+    it('should create a comment in the topic for the document', async () => {
+      const data_topic = {
+        topic_view_posts: {
+          id: 1,
+          post_stream: {
+            posts: [
+              {
+                id: 1,
+                username: 'testuser',
+                created_at: '2020-10-16T15:21:29.039Z',
+                cooked: '<p>trying to see if it creates a topic</p>'
+              },
+              {
+                id: 2,
+                username: 'testuser2',
+                created_at: '2020-10-16T17:00:29.039Z',
+                cooked: '<p>trying to see if it creates a second topic</p>'
+              }
+            ]
+          }
+        }
+      }
+
+
     })
   })
 })
