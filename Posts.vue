@@ -60,7 +60,7 @@ export default {
         color: 'BF1E2E',
         text_color: 'FFFFFF',
         permissions: {
-          'local-datashare': 1
+          [this.project]: 1
         },
         created_by_dataconnect: true
       }
