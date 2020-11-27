@@ -7,7 +7,9 @@
             v-model="comment"
             placeholder="new comment"
         ></textarea>
-        <button class="posts__actions__form-group__create btn btn-primary">Create</button>
+        <button class="posts__actions__form-group__create btn btn-primary">
+          Create
+        </button>
       </div>
     </div>
     <div v-for="post in posts" :key="post.id" class="posts__post">
@@ -35,6 +37,7 @@ export default {
     return {
       comment: '',
       discourseHost: 'http://localhost:8888/api/proxy',
+      documentId: this.$store.state.document.idAndRouting.id,
       posts: [],
       project: this.$store.state.search.index
     }
@@ -47,25 +50,24 @@ export default {
     }
   },
   methods: {
-    async setCategory() {
+    async setCategory () {
       const category = await this.getCategory()
       return isNull(category) ? this.createCategory() : category
     },
-    async createCategory() {
+    async createCategory () {
       const data = {
         name: `Datashare Documents for ${this.project}`,
         color: 'BF1E2E',
         text_color: 'FFFFFF',
         permissions: {
-          currentDsProject: 1
+          'local-datashare': 1
         },
         created_by_dataconnect: true
       }
       const response = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
       return response.data
     },
-
-    async getCategory() {
+    async getCategory () {
       const categories = await axios.get(`${this.discourseHost}/${this.project}/categories.json`)
       const filtered = filter(get(categories, 'data.category_list.categories', []), 'created_by_dataconnect')
       return filtered.length > 0 ? filtered[0] : null
