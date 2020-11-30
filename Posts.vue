@@ -64,11 +64,26 @@ export default {
         category = await this.setCategory()
 
         if (category != null) {
-          await this.createTopic(category.id)
+          let response = await this.createTopic(category.id)
+
+          if (response) {
+            await this.setPosts()
+          }
         }
       } else if (this.topicResponse.status === 200) {
-        await axios.post(`${this.discourseHost}/${this.project}/posts.json`, {raw: this.comment, topic_id: this.topicResponse.data.topic_view_posts.id, skip_validations: "true"})
+        let response = await axios.post(`${this.discourseHost}/${this.project}/posts.json`, {raw: this.comment, topic_id: this.topicResponse.data.topic_view_posts.id, skip_validations: "true"})
+
+        if (response.status !== 404) {
+          await this.setPosts()
+        }
       }
+    },
+    async setPosts () {
+      let response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
+      this.$set(this, 'posts', response.data.topic_view_posts.post_stream.posts)
+      this.$set(this, 'comment', null)
+
+      return true
     },
     async setCategory () {
       const category = await this.getCategory()
@@ -88,13 +103,7 @@ export default {
       return response.data
     },
     async getCategory () {
-      let categories
-
-      try {
-        categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
-      } catch(err) {
-        categories = err.response
-      }
+      let categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
 
       const filtered = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
       return filtered.length > 0 ? filtered[0] : null
@@ -108,7 +117,10 @@ export default {
             datashare_document_id: this.documentId,
             skip_validations: true
           }
-      await axios.post(`${this.discourseHost}/${this.project}/posts.json`, topic)
+
+      let response = await axios.post(`${this.discourseHost}/${this.project}/posts.json`, topic)
+
+      return response.status === 200 ? true : false
     }
   }
 }
