@@ -174,7 +174,7 @@ describe('Posts.vue', () => {
         post_number: 1
       }
 
-      axios.post.mockResolvedValue({ data })
+      axios.post.mockResolvedValue({ status: 200, data })
       wrapper = await shallowMount(Posts, { store })
 
       let text = wrapper.find('textarea')
@@ -184,7 +184,7 @@ describe('Posts.vue', () => {
       const response = await wrapper.vm.createTopic(category_id)
 
       expect(axios.post).toBeCalled()
-      expect(response).toEqual(data)
+      expect(response).toEqual(true)
     })
   })
 
