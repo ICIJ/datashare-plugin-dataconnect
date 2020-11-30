@@ -9,13 +9,13 @@ Vue.use(Vuex)
 jest.mock('axios')
 
 describe('Posts.vue', () => {
-  const state = { document: { idAndRouting: { id: 1 } }, search: { index: 'test-datashare' } }
+  const state = { document: { idAndRouting: { id: "1" } }, search: { index: 'test-datashare' } }
   const store = new Vuex.Store({ state })
   let wrapper = null
 
   afterAll(() => jest.unmock('axios'))
 
-  describe('topics', () => {
+  describe('posts', () => {
     it('should retrieve topics if any', async () => {
       const data = {
         topic_view_posts: {
@@ -46,7 +46,7 @@ describe('Posts.vue', () => {
       expect(wrapper.vm.posts).toEqual(data.topic_view_posts.post_stream.posts)
     })
 
-    it('should return null if no topics', async () => {
+    it('should return null if no posts', async () => {
       axios.get.mockResolvedValue({ status: 404, data: null })
       wrapper = await shallowMount(Posts, { store })
       await wrapper.vm.$nextTick()
@@ -59,21 +59,23 @@ describe('Posts.vue', () => {
   describe('getCategory', () => {
     it('return an existing category', async () => {
       const data = {
-        category_list: {
-          categories: [
-            {
-              id: 1,
-              permission: 1,
-              name: 'Datashare Documents for test-datashare',
-              created_by_dataconnect: true,
-              icij_projects_for_category: [
-                {
-                  permission_type: 1,
-                  group_name: 'test-datashare'
-                }
-              ]
-            }
-          ]
+        lists: {
+          category_list: {
+            categories: [
+              {
+                id: 1,
+                permission: 1,
+                name: 'Datashare Documents for test-datashare',
+                created_by_dataconnect: true,
+                icij_projects_for_category: [
+                  {
+                    permission_type: 1,
+                    group_name: 'test-datashare'
+                  }
+                ]
+              }
+            ]
+          }
         },
         post_stream: {
           posts: []
@@ -84,7 +86,7 @@ describe('Posts.vue', () => {
       const response = await wrapper.vm.getCategory()
 
       expect(axios.get).toBeCalled()
-      expect(response).toEqual(data.category_list.categories[0])
+      expect(response).toEqual(data.lists.category_list.categories[0])
     })
 
     it.todo('should return null if no existing category')
@@ -111,21 +113,23 @@ describe('Posts.vue', () => {
   describe('setCategory', () => {
     it('should return the existing category', async () => {
       const data = {
-        category_list: {
-          categories: [
-            {
-              id: 1,
-              permission: 1,
-              name: 'Datashare Documents for test-datashare',
-              created_by_dataconnect: true,
-              icij_projects_for_category: [
-                {
-                  permission_type: 1,
-                  group_name: 'test-datashare'
-                }
-              ]
-            }
-          ]
+        lists: {
+          category_list: {
+            categories: [
+              {
+                id: 1,
+                permission: 1,
+                name: 'Datashare Documents for test-datashare',
+                created_by_dataconnect: true,
+                icij_projects_for_category: [
+                  {
+                    permission_type: 1,
+                    group_name: 'test-datashare'
+                  }
+                ]
+              }
+            ]
+          }
         },
         post_stream: {
           posts: []
@@ -136,7 +140,7 @@ describe('Posts.vue', () => {
       const response = await wrapper.vm.setCategory()
 
       expect(axios.get).toBeCalled()
-      expect(response).toEqual(data.category_list.categories[0])
+      expect(response).toEqual(data.lists.category_list.categories[0])
     })
 
     it('should create the category if it does not exist', async () => {
@@ -155,6 +159,30 @@ describe('Posts.vue', () => {
       const response = await wrapper.vm.setCategory()
 
       expect(mockMethod).toBeCalled()
+      expect(axios.post).toBeCalled()
+      expect(response).toEqual(data)
+    })
+  })
+
+  describe('createTopic', () => {
+    it('should create a topic', async () => {
+      const data = {
+        id: 0,
+        name: null,
+        username: 'currentuser',
+        post_type: 1,
+        post_number: 1
+      }
+
+      axios.post.mockResolvedValue({ data })
+      wrapper = await shallowMount(Posts, { store })
+
+      let text = wrapper.find('textarea')
+      await text.setValue("testing comment")
+
+      let category_id = 1
+      const response = await wrapper.vm.createTopic(category_id)
+
       expect(axios.post).toBeCalled()
       expect(response).toEqual(data)
     })
