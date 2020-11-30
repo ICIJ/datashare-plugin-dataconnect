@@ -7,7 +7,7 @@
             v-model="comment"
             placeholder="new comment"
         ></textarea>
-        <button class="posts__actions__form-group__create btn btn-primary">
+        <button class="posts__actions__form-group__create btn btn-primary" @click="createComment()">
           Create
         </button>
       </div>
@@ -39,17 +39,37 @@ export default {
       discourseHost: 'http://localhost:8888/api/proxy',
       documentId: this.$store.state.document.idAndRouting.id,
       posts: [],
-      project: this.$store.state.search.index
+      project: this.$store.state.search.index,
+      topicResponse: null
     }
   },
   async mounted() {
-    const documentId = this.$store.state.document.idAndRouting.id
-    const response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${documentId}.json`)
-    if (response.status !== 404) {
-      this.$set(this, 'posts', response.data.post_stream.posts)
+    let topicResponse
+    try {
+      topicResponse = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
+    } catch (err) {
+      topicResponse = err.response
+    }
+
+    this.$set(this, 'topicResponse', topicResponse)
+
+    if (topicResponse.status != 404) {
+      this.$set(this, 'posts', topicResponse.data.topic_view_posts.post_stream.posts)
     }
   },
   methods: {
+    async createComment () {
+      if (this.topicResponse.status === 404) {
+        let category
+        category = await this.setCategory()
+
+        if (category != null) {
+          await this.createTopic(category.id)
+        }
+      } else if (this.topicResponse.status === 200) {
+        await axios.post(`${this.discourseHost}/${this.project}/posts.json`, {raw: this.comment, topic_id: this.topicResponse.data.topic_view_posts.id, skip_validations: "true"})
+      }
+    },
     async setCategory () {
       const category = await this.getCategory()
       return isNull(category) ? this.createCategory() : category
@@ -64,13 +84,31 @@ export default {
         },
         created_by_dataconnect: true
       }
-      const response = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
+      let response = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
       return response.data
     },
     async getCategory () {
-      const categories = await axios.get(`${this.discourseHost}/${this.project}/categories.json`)
-      const filtered = filter(get(categories, 'data.category_list.categories', []), 'created_by_dataconnect')
+      let categories
+
+      try {
+        categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
+      } catch(err) {
+        categories = err.response
+      }
+
+      const filtered = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
       return filtered.length > 0 ? filtered[0] : null
+    },
+    async createTopic (category_id) {
+      let topic = {
+            raw: this.comment,
+            title: `Datashare document ${this.documentId.substring(0, 7)}`,
+            category: category_id.toString(),
+            archetype: "regular",
+            datashare_document_id: this.documentId,
+            skip_validations: true
+          }
+      await axios.post(`${this.discourseHost}/${this.project}/posts.json`, topic)
     }
   }
 }
