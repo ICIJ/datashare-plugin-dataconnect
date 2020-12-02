@@ -71,15 +71,14 @@ export default {
       const topicPostResponse = await this.createTopicPost()
 
       if (topicPostResponse != null) {
-        const postsSuccess = await this.setPosts()
-        return postsSuccess
+        return await this.setPosts()
       } else {
         return false
       }
     },
 
     async setPosts () {
-      let response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
+      let response
 
       try {
         response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
