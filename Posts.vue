@@ -40,56 +40,137 @@ export default {
       documentId: this.$store.state.document.idAndRouting.id,
       posts: [],
       project: this.$store.state.search.index,
-      topicResponse: null
+      topicExists: null,
+      topicResponse: null,
+      categoryId: null
     }
   },
   async mounted() {
-    let topicResponse
+    let response
+
     try {
-      topicResponse = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
+      response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
     } catch (err) {
-      topicResponse = err.response
+      response = null
     }
 
-    this.$set(this, 'topicResponse', topicResponse)
+    this.$set(this, 'topicResponse', response)
 
-    if (topicResponse.status != 404) {
-      this.$set(this, 'posts', topicResponse.data.topic_view_posts.post_stream.posts)
+    if (this.topicResponse != null) {
+      this.$set(this, 'posts', this.topicResponse.data.topic_view_posts.post_stream.posts)
     }
   },
   methods: {
     async createComment () {
-      if (this.topicResponse.status === 404) {
-        let category
-        category = await this.setCategory()
+      const category = await this.setCategory()
 
-        if (category != null) {
-          let response = await this.createTopic(category.id)
+      if (category != null) {
+        this.$set(this, 'categoryId', category.id)
+      }
 
-          if (response) {
-            await this.setPosts()
-          }
-        }
-      } else if (this.topicResponse.status === 200) {
-        let response = await axios.post(`${this.discourseHost}/${this.project}/posts.json`, {raw: this.comment, topic_id: this.topicResponse.data.topic_view_posts.id, skip_validations: "true"})
+      const topicPostResponse = await this.createTopicPost()
 
-        if (response.status !== 404) {
-          await this.setPosts()
-        }
+      if (topicPostResponse != null) {
+        const postsSuccess = await this.setPosts()
+        return postsSuccess
+      } else {
+        return false
       }
     },
+
     async setPosts () {
       let response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
-      this.$set(this, 'posts', response.data.topic_view_posts.post_stream.posts)
-      this.$set(this, 'comment', null)
 
-      return true
+      try {
+        response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
+      } catch(error) {
+        response = null
+      }
+
+      if (response != null) {
+        this.$set(this, 'posts', response.data.topic_view_posts.post_stream.posts)
+        this.$set(this, 'comment', null)
+        this.$set(this, 'topicResponse', response)
+
+        return true
+      } else if (isNull(response)) {
+        return false
+      }
     },
+
     async setCategory () {
       const category = await this.getCategory()
       return isNull(category) ? this.createCategory() : category
     },
+
     async createCategory () {
+      const data = this.buildCategory()
+
+      let category
+
+      try {
+        category = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
+      } catch(error) {
+        category = null
+      }
+
+      return isNull(category) ? category : category.data.category
+    },
+
+    async getCategory () {
+      let categories
+
+      try {
+        categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
+      } catch(error) {
+        categories = null
+      }
+
+      const filtered = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
+
+      return filtered.length > 0 ? filtered[0] : null
+    },
+
+    async createTopicPost () {
+      const topic = this.buildTopic()
+
+      let response
+
+      try {
+        response = await axios.post(`${this.discourseHost}/${this.project}/posts.json`, topic)
+      } catch(error) {
+        response = null
+      }
+
+      return isNull(response) ? false : true
+    },
+
+    buildTopic () {
+      const topicExists = !isNull(this.topicResponse)
+
+      let topic
+
+      if (topicExists) {
+        topic = {
+          raw: this.comment,
+          topic_id: this.topicResponse.data.topic_view_posts.id,
+          skip_validations: "true"
+        }
+      } else {
+        topic = {
+              raw: this.comment,
+              title: `Datashare document ${this.documentId.substring(0, 7)}`,
+              category: this.categoryId.toString(),
+              archetype: "regular",
+              datashare_document_id: this.documentId,
+              skip_validations: "true"
+          }
+      }
+
+      return topic
+    },
+
+    buildCategory () {
       const data = {
         name: `Datashare Documents for ${this.project}`,
         color: 'BF1E2E',
@@ -97,30 +178,10 @@ export default {
         permissions: {
           [this.project]: 1
         },
-        created_by_dataconnect: true
+        created_by_dataconnect: "true"
       }
-      let response = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
-      return response.data
-    },
-    async getCategory () {
-      let categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
 
-      const filtered = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
-      return filtered.length > 0 ? filtered[0] : null
-    },
-    async createTopic (category_id) {
-      let topic = {
-            raw: this.comment,
-            title: `Datashare document ${this.documentId.substring(0, 7)}`,
-            category: category_id.toString(),
-            archetype: "regular",
-            datashare_document_id: this.documentId,
-            skip_validations: true
-          }
-
-      let response = await axios.post(`${this.discourseHost}/${this.project}/posts.json`, topic)
-
-      return response.status === 200 ? true : false
+      return data
     }
   }
 }
