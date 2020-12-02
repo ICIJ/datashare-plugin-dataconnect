@@ -95,10 +95,12 @@ describe('Posts.vue', () => {
   describe('createCategory', () => {
     it('should creates a category', async () => {
       const data = {
-        id: 1,
-        name: 'Datashare Documents for test-datashare',
-        post_stream: {
-          posts: []
+        category : {
+          id: 1,
+          name: 'Datashare Documents for test-datashare',
+          post_stream: {
+            posts: []
+          }
         }
       }
       axios.post.mockResolvedValue({ data })
@@ -106,7 +108,7 @@ describe('Posts.vue', () => {
       const response = await wrapper.vm.createCategory()
 
       expect(axios.post).toBeCalled()
-      expect(response).toEqual(data)
+      expect(response).toEqual(data.category)
     })
   })
 
@@ -145,10 +147,12 @@ describe('Posts.vue', () => {
 
     it('should create the category if it does not exist', async () => {
       const data = {
-        id: 2,
-        name: 'Datashare Documents for test-datashare',
-        post_stream: {
-          posts: []
+        category: {
+          id: 1,
+          name: 'Datashare Documents for test-datashare',
+          post_stream: {
+            posts: []
+          }
         }
       }
       axios.get.mockResolvedValue({ data })
@@ -160,12 +164,12 @@ describe('Posts.vue', () => {
 
       expect(mockMethod).toBeCalled()
       expect(axios.post).toBeCalled()
-      expect(response).toEqual(data)
+      expect(response).toEqual(data.category)
     })
   })
 
-  describe('createTopic', () => {
-    it('should create a topic', async () => {
+  describe('createTopicPost', () => {
+    it('should create a post within a topic, if the topic exists', async () => {
       const data = {
         id: 0,
         name: null,
@@ -179,9 +183,56 @@ describe('Posts.vue', () => {
 
       let text = wrapper.find('textarea')
       await text.setValue("testing comment")
+      await wrapper.setData({ categoryId: 1 })
+      await wrapper.setData({ topicResponse: null })
 
-      let category_id = 1
-      const response = await wrapper.vm.createTopic(category_id)
+      const response = await wrapper.vm.createTopicPost()
+
+      expect(axios.post).toBeCalled()
+      expect(response).toEqual(true)
+    })
+
+    it('should create a topic, if one does not exist', async () => {
+      const data = {
+        id: 0,
+        name: null,
+        username: 'currentuser',
+        post_type: 1,
+        post_number: 1
+      }
+
+      const topicResponse = {
+        data: {
+          topic_view_posts: {
+            id: 1,
+            post_stream: {
+              posts: [
+                {
+                  id: 1,
+                  username: 'testuser',
+                  created_at: '2020-10-16T15:21:29.039Z',
+                  cooked: '<p>trying to see if it creates a topic</p>'
+                },
+                {
+                  id: 2,
+                  username: 'testuser2',
+                  created_at: '2020-10-16T17:00:29.039Z',
+                  cooked: '<p>trying to see if it creates a second topic</p>'
+                }
+              ]
+            }
+          }
+        }
+      }
+
+      axios.post.mockResolvedValue({ status: 200, data })
+      wrapper = await shallowMount(Posts, { store })
+
+      let text = wrapper.find('textarea')
+      await text.setValue("testing comment")
+      await wrapper.setData({ topicResponse: topicResponse })
+
+      const response = await wrapper.vm.createTopicPost()
 
       expect(axios.post).toBeCalled()
       expect(response).toEqual(true)
