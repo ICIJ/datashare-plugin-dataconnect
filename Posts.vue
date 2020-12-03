@@ -46,17 +46,17 @@ export default {
     }
   },
   async mounted() {
-    let response
+    let response = null
 
     try {
       response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
-    } catch (err) {
-      response = null
+    } catch (error) {
+      throw error
     }
 
     this.$set(this, 'topicResponse', response)
 
-    if (this.topicResponse != null) {
+    if (!isNull(this.topicResponse)) {
       this.$set(this, 'posts', this.topicResponse.data.topic_view_posts.post_stream.posts)
     }
   },
@@ -70,7 +70,7 @@ export default {
 
       const topicPostResponse = await this.createTopicPost()
 
-      if (topicPostResponse != null) {
+      if (!isNull(topicPostResponse)) {
         return await this.setPosts()
       } else {
         return false
@@ -78,15 +78,15 @@ export default {
     },
 
     async setPosts () {
-      let response
+      let response = null
 
       try {
         response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
       } catch(error) {
-        response = null
+        throw error
       }
 
-      if (response != null) {
+      if (!isNull(response)) {
         this.$set(this, 'posts', response.data.topic_view_posts.post_stream.posts)
         this.$set(this, 'comment', null)
         this.$set(this, 'topicResponse', response)
@@ -105,24 +105,24 @@ export default {
     async createCategory () {
       const data = this.buildCategory()
 
-      let category
+      let category = null
 
       try {
         category = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
       } catch(error) {
-        category = null
+        throw error
       }
 
       return isNull(category) ? category : category.data.category
     },
 
     async getCategory () {
-      let categories
+      let categories = null
 
       try {
         categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
       } catch(error) {
-        categories = null
+        throw error
       }
 
       const filtered = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
@@ -133,12 +133,12 @@ export default {
     async createTopicPost () {
       const topic = this.buildTopic()
 
-      let response
+      let response = null
 
       try {
         response = await axios.post(`${this.discourseHost}/${this.project}/posts.json`, topic)
       } catch(error) {
-        response = null
+        throw error
       }
 
       return isNull(response) ? false : true
