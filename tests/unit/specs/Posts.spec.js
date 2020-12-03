@@ -264,10 +264,43 @@ describe('Posts.vue', () => {
       }
     }
 
+    const getCategoryData = {
+        id: 1,
+        permission: 1,
+        name: 'Datashare Documents for test-datashare',
+        created_by_dataconnect: true,
+        icij_projects_for_category: [
+          {
+            permission_type: 1,
+            group_name: 'test-datashare'
+          }
+        ]
+      }
+
+      const createCategoryData = {
+        data: {
+          category: {
+            id: 1,
+            permission: 1,
+            name: 'Datashare Documents for test-datashare',
+            created_by_dataconnect: true,
+            icij_projects_for_category: [
+              {
+                permission_type: 1,
+                group_name: 'test-datashare'
+              }
+            ]
+          }
+        }
+      }
+
     describe('category exists', () => {
       describe('topic exists', () => {
         it('creates comment', async () => {
           wrapper = await shallowMount(Posts, { store })
+
+          const mockMethod = jest.fn().mockReturnValue(getCategoryData)
+          wrapper.vm.setCategory = mockMethod
 
           let text = wrapper.find('textarea')
           await text.setValue("testing comment")
@@ -284,9 +317,11 @@ describe('Posts.vue', () => {
         it('creates comment', async () => {
           wrapper = await shallowMount(Posts, { store })
 
+          const mockMethod = jest.fn().mockReturnValue(getCategoryData)
+          wrapper.vm.setCategory = mockMethod
+
           let text = wrapper.find('textarea')
           await text.setValue("testing comment")
-          await wrapper.setData({ categoryId: 1 })
           await wrapper.setData({ topicResponse: null })
 
           const response = await wrapper.vm.createComment()
@@ -300,8 +335,23 @@ describe('Posts.vue', () => {
 
     describe('category does not exist', () => {
       describe('topic does not exist', () => {
-        it('creates comment', () => {
+        it('creates comment', async () => {
           // to do
+          // wrapper = await shallowMount(Posts, { store })
+          //
+          // const mockMethod = jest.fn().mockReturnValue(createCategoryData)
+          // wrapper.vm.createCategory = mockMethod
+          //
+          // let text = wrapper.find('textarea')
+          // await text.setValue("testing comment")
+          // await wrapper.setData({ topicResponse: null })
+          //
+          // const response = await wrapper.vm.createComment()
+          //
+          // expect(mockMethod).toBeCalled()
+          // expect(axios.get).toBeCalled()
+          // expect(axios.post).toBeCalled()
+          // expect(response).toBe(true)
         })
       })
     })
