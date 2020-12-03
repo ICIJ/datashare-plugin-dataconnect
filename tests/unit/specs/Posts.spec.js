@@ -169,7 +169,7 @@ describe('Posts.vue', () => {
   })
 
   describe('createTopicPost', () => {
-    it('should create a post within a topic, if the topic exists', async () => {
+    it('should create a topic with a post, if the topic does not exist', async () => {
       const data = {
         id: 0,
         name: null,
@@ -192,7 +192,7 @@ describe('Posts.vue', () => {
       expect(response).toEqual(true)
     })
 
-    it('should create a topic, if one does not exist', async () => {
+    it('should create a post within a topic, if the topic exists', async () => {
       const data = {
         id: 0,
         name: null,
@@ -240,8 +240,8 @@ describe('Posts.vue', () => {
   })
 
   describe('createComment', () => {
-    it('should create a comment in the topic for the document', async () => {
-      const data_topic = {
+    const topicResponse = {
+      data: {
         topic_view_posts: {
           id: 1,
           post_stream: {
@@ -262,8 +262,48 @@ describe('Posts.vue', () => {
           }
         }
       }
+    }
 
+    describe('category exists', () => {
+      describe('topic exists', () => {
+        it('creates comment', async () => {
+          wrapper = await shallowMount(Posts, { store })
 
+          let text = wrapper.find('textarea')
+          await text.setValue("testing comment")
+          await wrapper.setData({ topicResponse: topicResponse })
+
+          const response = await wrapper.vm.createComment()
+
+          expect(axios.get).toBeCalled()
+          expect(response).toBe(true)
+        })
+      })
+
+      describe('topic does not exist', () => {
+        it('creates comment', async () => {
+          wrapper = await shallowMount(Posts, { store })
+
+          let text = wrapper.find('textarea')
+          await text.setValue("testing comment")
+          await wrapper.setData({ categoryId: 1 })
+          await wrapper.setData({ topicResponse: null })
+
+          const response = await wrapper.vm.createComment()
+
+          expect(axios.get).toBeCalled()
+          expect(axios.post).toBeCalled()
+          expect(response).toBe(true)
+        })
+      })
+    })
+
+    describe('category does not exist', () => {
+      describe('topic does not exist', () => {
+        it('creates comment', () => {
+          // to do
+        })
+      })
     })
   })
 })
