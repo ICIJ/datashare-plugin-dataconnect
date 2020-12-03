@@ -64,11 +64,11 @@ export default {
     async createComment () {
       const category = await this.setCategory()
 
+      let topicPostResponse = null
       if (category != null) {
         this.$set(this, 'categoryId', category.id)
+        topicPostResponse = await this.createTopicPost()
       }
-
-      const topicPostResponse = await this.createTopicPost()
 
       if (!isNull(topicPostResponse)) {
         return await this.setPosts()
