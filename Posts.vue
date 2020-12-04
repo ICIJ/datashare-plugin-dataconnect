@@ -50,9 +50,7 @@ export default {
 
     try {
       response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
-    } catch (error) {
-      throw error
-    }
+    } catch (_) {}
 
     this.$set(this, 'topicResponse', response)
 
@@ -82,9 +80,7 @@ export default {
 
       try {
         response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
-      } catch(error) {
-        throw error
-      }
+      } catch(_) {}
 
       if (!isNull(response)) {
         this.$set(this, 'posts', response.data.topic_view_posts.post_stream.posts)
@@ -109,9 +105,7 @@ export default {
 
       try {
         category = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
-      } catch(error) {
-        throw error
-      }
+      } catch(_) {}
 
       return isNull(category) ? category : category.data.category
     },
@@ -121,9 +115,7 @@ export default {
 
       try {
         categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
-      } catch(error) {
-        throw error
-      }
+      } catch(_) {}
 
       const filtered = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
 
@@ -137,9 +129,7 @@ export default {
 
       try {
         response = await axios.post(`${this.discourseHost}/${this.project}/posts.json`, topic)
-      } catch(error) {
-        throw error
-      }
+      } catch(_) {}
 
       return isNull(response) ? false : true
     },
