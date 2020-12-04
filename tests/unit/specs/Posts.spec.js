@@ -133,6 +133,17 @@ describe('Posts.vue', () => {
       expect(axios.get).toBeCalled()
       expect(response).toEqual(null)
     })
+
+    describe('error occurs', () => {
+      it('returns null', async () => {
+        axios.get.mockRejectedValue({ status: 404 })
+        wrapper = await shallowMount(Posts, { store })
+
+        const response = await wrapper.vm.getCategory()
+
+        expect(response).toEqual(null)
+      })
+    })
   })
 
   describe('createCategory', () => {
@@ -152,6 +163,17 @@ describe('Posts.vue', () => {
 
       expect(axios.post).toBeCalled()
       expect(response).toEqual(data.category)
+    })
+
+    describe('error occurs', () => {
+      it('returns null', async () => {
+        axios.post.mockRejectedValue({ status: 404 })
+        wrapper = await shallowMount(Posts, { store })
+
+        const response = await wrapper.vm.createCategory()
+
+        expect(response).toEqual(null)
+      })
     })
   })
 
@@ -212,6 +234,30 @@ describe('Posts.vue', () => {
   })
 
   describe('createTopicPost', () => {
+    const topicResponse = {
+      data: {
+        topic_view_posts: {
+          id: 1,
+          post_stream: {
+            posts: [
+              {
+                id: 1,
+                username: 'testuser',
+                created_at: '2020-10-16T15:21:29.039Z',
+                cooked: '<p>trying to see if it creates a topic</p>'
+              },
+              {
+                id: 2,
+                username: 'testuser2',
+                created_at: '2020-10-16T17:00:29.039Z',
+                cooked: '<p>trying to see if it creates a second topic</p>'
+              }
+            ]
+          }
+        }
+      }
+    }
+
     it('should create a topic with a post, if the topic does not exist', async () => {
       const data = {
         id: 0,
@@ -244,30 +290,6 @@ describe('Posts.vue', () => {
         post_number: 1
       }
 
-      const topicResponse = {
-        data: {
-          topic_view_posts: {
-            id: 1,
-            post_stream: {
-              posts: [
-                {
-                  id: 1,
-                  username: 'testuser',
-                  created_at: '2020-10-16T15:21:29.039Z',
-                  cooked: '<p>trying to see if it creates a topic</p>'
-                },
-                {
-                  id: 2,
-                  username: 'testuser2',
-                  created_at: '2020-10-16T17:00:29.039Z',
-                  cooked: '<p>trying to see if it creates a second topic</p>'
-                }
-              ]
-            }
-          }
-        }
-      }
-
       axios.post.mockResolvedValue({ status: 200, data })
       wrapper = await shallowMount(Posts, { store })
 
@@ -283,8 +305,16 @@ describe('Posts.vue', () => {
 
     describe('error occurs', () => {
       it('returns false', async () => {
+        axios.post.mockRejectedValue({ status: 404 })
         wrapper = await shallowMount(Posts, { store })
 
+        let text = wrapper.find('textarea')
+        await text.setValue("testing comment")
+        await wrapper.setData({ topicResponse: topicResponse })
+
+        const response = await wrapper.vm.createTopicPost()
+
+        expect(response).toEqual(false)
       })
     })
   })
