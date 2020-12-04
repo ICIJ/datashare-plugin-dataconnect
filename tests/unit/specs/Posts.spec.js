@@ -89,7 +89,50 @@ describe('Posts.vue', () => {
       expect(response).toEqual(data.lists.category_list.categories[0])
     })
 
-    it.todo('should return null if no existing category')
+    it('should return null if no existing category', async () => {
+      const data = {
+        lists: {
+          category_list: {
+            categories: [
+              {
+                id: 1,
+                permission: 1,
+                name: 'random category 1',
+                created_by_dataconnect: false,
+                icij_projects_for_category: [
+                  {
+                    permission_type: 1,
+                    group_name: 'test-datashare'
+                  }
+                ]
+              },
+              {
+                id: 1,
+                permission: 1,
+                name: 'random category 2',
+                created_by_dataconnect: false,
+                icij_projects_for_category: [
+                  {
+                    permission_type: 1,
+                    group_name: 'test-datashare'
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        post_stream: {
+          posts: []
+        }
+      }
+
+      axios.get.mockResolvedValue({ data })
+      wrapper = await shallowMount(Posts, { store })
+      const response = await wrapper.vm.getCategory()
+
+      expect(axios.get).toBeCalled()
+      expect(response).toEqual(null)
+    })
   })
 
   describe('createCategory', () => {
@@ -277,23 +320,6 @@ describe('Posts.vue', () => {
         ]
       }
 
-      const createCategoryData = {
-        data: {
-          category: {
-            id: 1,
-            permission: 1,
-            name: 'Datashare Documents for test-datashare',
-            created_by_dataconnect: true,
-            icij_projects_for_category: [
-              {
-                permission_type: 1,
-                group_name: 'test-datashare'
-              }
-            ]
-          }
-        }
-      }
-
     describe('category exists', () => {
       describe('topic exists', () => {
         it('creates comment', async () => {
@@ -329,29 +355,6 @@ describe('Posts.vue', () => {
           expect(axios.get).toBeCalled()
           expect(axios.post).toBeCalled()
           expect(response).toBe(true)
-        })
-      })
-    })
-
-    describe('category does not exist', () => {
-      describe('topic does not exist', () => {
-        it('creates comment', async () => {
-          // to do
-          // wrapper = await shallowMount(Posts, { store })
-          //
-          // const mockMethod = jest.fn().mockReturnValue(createCategoryData)
-          // wrapper.vm.createCategory = mockMethod
-          //
-          // let text = wrapper.find('textarea')
-          // await text.setValue("testing comment")
-          // await wrapper.setData({ topicResponse: null })
-          //
-          // const response = await wrapper.vm.createComment()
-          //
-          // expect(mockMethod).toBeCalled()
-          // expect(axios.get).toBeCalled()
-          // expect(axios.post).toBeCalled()
-          // expect(response).toBe(true)
         })
       })
     })
