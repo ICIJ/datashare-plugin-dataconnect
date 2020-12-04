@@ -70,7 +70,7 @@ export default {
         topicPostResponse = await this.createTopicPost()
       }
 
-      if (!isNull(topicPostResponse)) {
+      if (!isNull(topicPostResponse) || topicPostResponse) {
         return await this.setPosts()
       } else {
         return false

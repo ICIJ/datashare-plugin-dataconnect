@@ -280,6 +280,13 @@ describe('Posts.vue', () => {
       expect(axios.post).toBeCalled()
       expect(response).toEqual(true)
     })
+
+    describe('error occurs', () => {
+      it('returns false', async () => {
+        wrapper = await shallowMount(Posts, { store })
+
+      })
+    })
   })
 
   describe('createComment', () => {
@@ -355,6 +362,59 @@ describe('Posts.vue', () => {
           expect(axios.get).toBeCalled()
           expect(axios.post).toBeCalled()
           expect(response).toBe(true)
+        })
+      })
+    })
+
+    describe('error occurs', () => {
+      describe('null category', () => {
+        it('returns false', async () => {
+          wrapper = await shallowMount(Posts, { store })
+
+          const mockMethod = jest.fn().mockReturnValue(null)
+          wrapper.vm.setCategory = mockMethod
+
+          const response = await wrapper.vm.createComment()
+
+          expect(axios.get).toBeCalled()
+          expect(response).toBe(false)
+        })
+      })
+
+      describe('false topicPostResponse', () => {
+        const getCategoryData = {
+            id: 1,
+            permission: 1,
+            name: 'Datashare Documents for test-datashare',
+            created_by_dataconnect: true,
+            icij_projects_for_category: [
+              {
+                permission_type: 1,
+                group_name: 'test-datashare'
+              }
+            ]
+          }
+
+        it('returns false', async () => {
+          // wrapper = await shallowMount(Posts, { store })
+          //
+          // let mockMethod = jest.fn().mockReturnValue(getCategoryData)
+          // wrapper.vm.setCategory = mockMethod
+          //
+          // wrapper.vm.createTopicPost = jest.fn().mockReturnValue(false)
+
+          // mockMethod = jest.fn().mockReturnValue(getCategoryData)
+          // wrapper.vm.setCategory = mockMethod
+
+          // let text = wrapper.find('textarea')
+          // await text.setValue("testing comment")
+          // await wrapper.setData({ topicResponse: null })
+          //
+          // const response = await wrapper.vm.createComment()
+          //
+          // expect(axios.get).toBeCalled()
+          // expect(axios.post).toBeCalled()
+          // expect(response).toBe(false)
         })
       })
     })
