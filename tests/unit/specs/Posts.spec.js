@@ -11,6 +11,73 @@ jest.mock('axios')
 describe('Posts.vue', () => {
   const state = { document: { idAndRouting: { id: "1" } }, search: { index: 'test-datashare' } }
   const store = new Vuex.Store({ state })
+
+  const newCategoryData = {
+    category: {
+      id: 1,
+      name: 'Datashare Documents for test-datashare',
+      post_stream: {
+        posts: []
+      }
+    }
+  }
+
+  const existingCategoryData = {
+    lists: {
+      category_list: {
+        categories: [
+          {
+            id: 1,
+            permission: 1,
+            name: 'Datashare Documents for test-datashare',
+            created_by_dataconnect: true,
+            icij_projects_for_category: [
+              {
+                permission_type: 1,
+                group_name: 'test-datashare'
+              }
+            ]
+          }
+        ]
+      }
+    },
+    post_stream: {
+      posts: []
+    }
+  }
+
+  const postData = {
+    id: 0,
+    name: null,
+    username: 'currentuser',
+    post_type: 1,
+    post_number: 1
+  }
+
+  const topicResponse = {
+    data: {
+      topic_view_posts: {
+        id: 1,
+        post_stream: {
+          posts: [
+            {
+              id: 1,
+              username: 'testuser',
+              created_at: '2020-10-16T15:21:29.039Z',
+              cooked: '<p>trying to see if it creates a topic</p>'
+            },
+            {
+              id: 2,
+              username: 'testuser2',
+              created_at: '2020-10-16T17:00:29.039Z',
+              cooked: '<p>trying to see if it creates a second topic</p>'
+            }
+          ]
+        }
+      }
+    }
+  }
+
   let wrapper = null
 
   afterAll(() => jest.unmock('axios'))
@@ -58,29 +125,8 @@ describe('Posts.vue', () => {
 
   describe('getCategory', () => {
     it('return an existing category', async () => {
-      const data = {
-        lists: {
-          category_list: {
-            categories: [
-              {
-                id: 1,
-                permission: 1,
-                name: 'Datashare Documents for test-datashare',
-                created_by_dataconnect: true,
-                icij_projects_for_category: [
-                  {
-                    permission_type: 1,
-                    group_name: 'test-datashare'
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        post_stream: {
-          posts: []
-        }
-      }
+      const data = existingCategoryData
+
       axios.get.mockResolvedValue({ data })
       wrapper = await shallowMount(Posts, { store })
       const response = await wrapper.vm.getCategory()
@@ -148,15 +194,8 @@ describe('Posts.vue', () => {
 
   describe('createCategory', () => {
     it('should creates a category', async () => {
-      const data = {
-        category : {
-          id: 1,
-          name: 'Datashare Documents for test-datashare',
-          post_stream: {
-            posts: []
-          }
-        }
-      }
+      const data = newCategoryData
+
       axios.post.mockResolvedValue({ data })
       wrapper = await shallowMount(Posts, { store })
       const response = await wrapper.vm.createCategory()
@@ -179,29 +218,8 @@ describe('Posts.vue', () => {
 
   describe('setCategory', () => {
     it('should return the existing category', async () => {
-      const data = {
-        lists: {
-          category_list: {
-            categories: [
-              {
-                id: 1,
-                permission: 1,
-                name: 'Datashare Documents for test-datashare',
-                created_by_dataconnect: true,
-                icij_projects_for_category: [
-                  {
-                    permission_type: 1,
-                    group_name: 'test-datashare'
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        post_stream: {
-          posts: []
-        }
-      }
+      const data = existingCategoryData
+
       axios.get.mockResolvedValue({ data })
       wrapper = await shallowMount(Posts, { store })
       const response = await wrapper.vm.setCategory()
@@ -211,15 +229,8 @@ describe('Posts.vue', () => {
     })
 
     it('should create the category if it does not exist', async () => {
-      const data = {
-        category: {
-          id: 1,
-          name: 'Datashare Documents for test-datashare',
-          post_stream: {
-            posts: []
-          }
-        }
-      }
+      const data = newCategoryData
+
       axios.get.mockResolvedValue({ data })
       axios.post.mockResolvedValue({ data })
       wrapper = await shallowMount(Posts, { store })
@@ -234,43 +245,11 @@ describe('Posts.vue', () => {
   })
 
   describe('createTopicPost', () => {
-    const topicResponse = {
-      data: {
-        topic_view_posts: {
-          id: 1,
-          post_stream: {
-            posts: [
-              {
-                id: 1,
-                username: 'testuser',
-                created_at: '2020-10-16T15:21:29.039Z',
-                cooked: '<p>trying to see if it creates a topic</p>'
-              },
-              {
-                id: 2,
-                username: 'testuser2',
-                created_at: '2020-10-16T17:00:29.039Z',
-                cooked: '<p>trying to see if it creates a second topic</p>'
-              }
-            ]
-          }
-        }
-      }
-    }
-
     it('should create a topic with a post, if the topic does not exist', async () => {
-      const data = {
-        id: 0,
-        name: null,
-        username: 'currentuser',
-        post_type: 1,
-        post_number: 1
-      }
-
-      axios.post.mockResolvedValue({ status: 200, data })
+      axios.post.mockResolvedValue({ status: 200, postData })
       wrapper = await shallowMount(Posts, { store })
 
-      let text = wrapper.find('textarea')
+      const text = wrapper.find('textarea')
       await text.setValue("testing comment")
       await wrapper.setData({ categoryId: 1 })
       await wrapper.setData({ topicResponse: null })
@@ -282,18 +261,10 @@ describe('Posts.vue', () => {
     })
 
     it('should create a post within a topic, if the topic exists', async () => {
-      const data = {
-        id: 0,
-        name: null,
-        username: 'currentuser',
-        post_type: 1,
-        post_number: 1
-      }
-
-      axios.post.mockResolvedValue({ status: 200, data })
+      axios.post.mockResolvedValue({ status: 200, postData })
       wrapper = await shallowMount(Posts, { store })
 
-      let text = wrapper.find('textarea')
+      const text = wrapper.find('textarea')
       await text.setValue("testing comment")
       await wrapper.setData({ topicResponse: topicResponse })
 
@@ -308,7 +279,7 @@ describe('Posts.vue', () => {
         axios.post.mockRejectedValue({ status: 404 })
         wrapper = await shallowMount(Posts, { store })
 
-        let text = wrapper.find('textarea')
+        const text = wrapper.find('textarea')
         await text.setValue("testing comment")
         await wrapper.setData({ topicResponse: topicResponse })
 
@@ -320,30 +291,6 @@ describe('Posts.vue', () => {
   })
 
   describe('createComment', () => {
-    const topicResponse = {
-      data: {
-        topic_view_posts: {
-          id: 1,
-          post_stream: {
-            posts: [
-              {
-                id: 1,
-                username: 'testuser',
-                created_at: '2020-10-16T15:21:29.039Z',
-                cooked: '<p>trying to see if it creates a topic</p>'
-              },
-              {
-                id: 2,
-                username: 'testuser2',
-                created_at: '2020-10-16T17:00:29.039Z',
-                cooked: '<p>trying to see if it creates a second topic</p>'
-              }
-            ]
-          }
-        }
-      }
-    }
-
     const getCategoryData = {
         id: 1,
         permission: 1,
@@ -365,7 +312,7 @@ describe('Posts.vue', () => {
           const mockMethod = jest.fn().mockReturnValue(getCategoryData)
           wrapper.vm.setCategory = mockMethod
 
-          let text = wrapper.find('textarea')
+          const text = wrapper.find('textarea')
           await text.setValue("testing comment")
           await wrapper.setData({ topicResponse: topicResponse })
 
@@ -383,7 +330,7 @@ describe('Posts.vue', () => {
           const mockMethod = jest.fn().mockReturnValue(getCategoryData)
           wrapper.vm.setCategory = mockMethod
 
-          let text = wrapper.find('textarea')
+          const text = wrapper.find('textarea')
           await text.setValue("testing comment")
           await wrapper.setData({ topicResponse: null })
 
@@ -408,43 +355,6 @@ describe('Posts.vue', () => {
 
           expect(axios.get).toBeCalled()
           expect(response).toBe(false)
-        })
-      })
-
-      describe('false topicPostResponse', () => {
-        const getCategoryData = {
-            id: 1,
-            permission: 1,
-            name: 'Datashare Documents for test-datashare',
-            created_by_dataconnect: true,
-            icij_projects_for_category: [
-              {
-                permission_type: 1,
-                group_name: 'test-datashare'
-              }
-            ]
-          }
-
-        it('returns false', async () => {
-          // wrapper = await shallowMount(Posts, { store })
-          //
-          // let mockMethod = jest.fn().mockReturnValue(getCategoryData)
-          // wrapper.vm.setCategory = mockMethod
-          //
-          // wrapper.vm.createTopicPost = jest.fn().mockReturnValue(false)
-
-          // mockMethod = jest.fn().mockReturnValue(getCategoryData)
-          // wrapper.vm.setCategory = mockMethod
-
-          // let text = wrapper.find('textarea')
-          // await text.setValue("testing comment")
-          // await wrapper.setData({ topicResponse: null })
-          //
-          // const response = await wrapper.vm.createComment()
-          //
-          // expect(axios.get).toBeCalled()
-          // expect(axios.post).toBeCalled()
-          // expect(response).toBe(false)
         })
       })
     })
