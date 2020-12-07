@@ -9,7 +9,7 @@ Vue.use(Vuex)
 jest.mock('axios')
 
 describe('Posts.vue', () => {
-  const state = { document: { idAndRouting: { id: "1" } }, search: { index: 'test-datashare' } }
+  const state = { document: { idAndRouting: { id: '1' } }, search: { index: 'test-datashare' } }
   const store = new Vuex.Store({ state })
 
   const newCategoryData = {
@@ -114,7 +114,7 @@ describe('Posts.vue', () => {
     })
 
     it('should return null if no posts', async () => {
-      axios.get.mockResolvedValue({ status: 404, data: null })
+      axios.get.mockRejectedValue({ status: 404, data: null })
       wrapper = await shallowMount(Posts, { store })
       await wrapper.vm.$nextTick()
 
@@ -167,8 +167,10 @@ describe('Posts.vue', () => {
             ]
           }
         },
-        post_stream: {
-          posts: []
+        topic_view_posts: {
+          post_stream: {
+            posts: []
+          }
         }
       }
 
@@ -250,14 +252,14 @@ describe('Posts.vue', () => {
       wrapper = await shallowMount(Posts, { store })
 
       const text = wrapper.find('textarea')
-      await text.setValue("testing comment")
+      await text.setValue('testing comment')
       await wrapper.setData({ categoryId: 1 })
       await wrapper.setData({ topicResponse: null })
 
       const response = await wrapper.vm.createTopicPost()
 
       expect(axios.post).toBeCalled()
-      expect(response).toEqual(true)
+      expect(response).toBeTruthy()
     })
 
     it('should create a post within a topic, if the topic exists', async () => {
@@ -265,13 +267,13 @@ describe('Posts.vue', () => {
       wrapper = await shallowMount(Posts, { store })
 
       const text = wrapper.find('textarea')
-      await text.setValue("testing comment")
-      await wrapper.setData({ topicResponse: topicResponse })
+      await text.setValue('testing comment')
+      await wrapper.setData({ topicResponse })
 
       const response = await wrapper.vm.createTopicPost()
 
       expect(axios.post).toBeCalled()
-      expect(response).toEqual(true)
+      expect(response).toBeTruthy()
     })
 
     describe('error occurs', () => {
@@ -280,12 +282,12 @@ describe('Posts.vue', () => {
         wrapper = await shallowMount(Posts, { store })
 
         const text = wrapper.find('textarea')
-        await text.setValue("testing comment")
-        await wrapper.setData({ topicResponse: topicResponse })
+        await text.setValue('testing comment')
+        await wrapper.setData({ topicResponse })
 
         const response = await wrapper.vm.createTopicPost()
 
-        expect(response).toEqual(false)
+        expect(response).toBeFalsy()
       })
     })
   })
@@ -313,13 +315,13 @@ describe('Posts.vue', () => {
           wrapper.vm.setCategory = mockMethod
 
           const text = wrapper.find('textarea')
-          await text.setValue("testing comment")
-          await wrapper.setData({ topicResponse: topicResponse })
+          await text.setValue('testing comment')
+          await wrapper.setData({ topicResponse })
 
           const response = await wrapper.vm.createComment()
 
           expect(axios.get).toBeCalled()
-          expect(response).toBe(true)
+          expect(response).toBeTruthy()
         })
       })
 
@@ -331,14 +333,14 @@ describe('Posts.vue', () => {
           wrapper.vm.setCategory = mockMethod
 
           const text = wrapper.find('textarea')
-          await text.setValue("testing comment")
+          await text.setValue('testing comment')
           await wrapper.setData({ topicResponse: null })
 
           const response = await wrapper.vm.createComment()
 
           expect(axios.get).toBeCalled()
           expect(axios.post).toBeCalled()
-          expect(response).toBe(true)
+          expect(response).toBeTruthy()
         })
       })
     })
@@ -354,7 +356,7 @@ describe('Posts.vue', () => {
           const response = await wrapper.vm.createComment()
 
           expect(axios.get).toBeCalled()
-          expect(response).toBe(false)
+          expect(response).toBeFalsy()
         })
       })
     })
