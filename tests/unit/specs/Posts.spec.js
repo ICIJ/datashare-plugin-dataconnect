@@ -319,6 +319,17 @@ describe('Posts.vue', () => {
       })
     })
 
+    describe('click action', () => {
+      it('sets and creates comment', async () => {
+        wrapper = await shallowMount(Posts, { store })
+        const spyCreateComment = jest.spyOn(wrapper.vm, 'createComment');
+
+        await wrapper.find('button').trigger('click')
+
+        expect(spyCreateComment).toHaveBeenCalled()
+      })
+    })
+
     describe('error occurs', () => {
       describe('null category', () => {
         it('returns false', async () => {
