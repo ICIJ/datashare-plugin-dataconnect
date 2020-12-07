@@ -16,6 +16,8 @@ describe('Posts.vue', () => {
     category: {
       id: 1,
       name: 'Datashare Documents for test-datashare',
+    },
+    topic_view_posts: {
       post_stream: {
         posts: []
       }
@@ -41,8 +43,10 @@ describe('Posts.vue', () => {
         ]
       }
     },
-    post_stream: {
-      posts: []
+    topic_view_posts: {
+      post_stream: {
+        posts: []
+      }
     }
   }
 
