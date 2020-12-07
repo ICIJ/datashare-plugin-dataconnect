@@ -178,15 +178,13 @@ describe('Posts.vue', () => {
 
   describe('createTopicPost', () => {
     it('should create a topic with a post, if the topic does not exist', async () => {
-      axios.post.mockResolvedValue({ status: 200, postData })
+      axios.get.mockResolvedValue(null)
       wrapper = await shallowMount(Posts, { store })
 
-      const text = wrapper.find('textarea')
-      await text.setValue('testing comment')
-      await wrapper.setData({ categoryId: 1 })
-      await wrapper.setData({ topicResponse: null })
-
-      const response = await wrapper.vm.createTopicPost()
+      wrapper.vm.topicResponse = null
+      wrapper.vm.comment = 'testing comment'
+      axios.post.mockResolvedValue({ status: 200, postData })
+      const response = await wrapper.vm.createTopicPost({ id: 1 })
 
       expect(axios.post).toBeCalled()
       expect(response).toBeTruthy()
@@ -224,17 +222,17 @@ describe('Posts.vue', () => {
 
   describe('createComment', () => {
     const getCategoryData = {
-        id: 1,
-        permission: 1,
-        name: 'Datashare Documents for test-datashare',
-        created_by_dataconnect: true,
-        icij_projects_for_category: [
-          {
-            permission_type: 1,
-            group_name: 'test-datashare'
-          }
-        ]
-      }
+      id: 1,
+      permission: 1,
+      name: 'Datashare Documents for test-datashare',
+      created_by_dataconnect: true,
+      icij_projects_for_category: [
+        {
+          permission_type: 1,
+          group_name: 'test-datashare'
+        }
+      ]
+    }
 
     describe('category exists', () => {
       describe('topic exists', () => {
@@ -260,10 +258,13 @@ describe('Posts.vue', () => {
 
       describe('topic does not exist', () => {
         it('creates comment', async () => {
+          axios.get.mockResolvedValue(null)
           wrapper = await shallowMount(Posts, { store })
 
-          const mockMethod = jest.fn().mockReturnValue(getCategoryData)
-          wrapper.vm.getCategory = mockMethod
+          const mockFunction = jest.fn().mockReturnValue(getCategoryData)
+          wrapper.vm.getCategory = mockFunction
+          wrapper.vm.category = { id: 1 }
+          axios.get.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
 
           const text = wrapper.find('textarea')
           await text.setValue('testing comment')

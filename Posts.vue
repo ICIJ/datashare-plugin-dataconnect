@@ -41,8 +41,7 @@ export default {
       posts: [],
       project: this.$store.state.search.index,
       topicExists: null,
-      topicResponse: null,
-      categoryId: null
+      topicResponse: null
     }
   },
   async mounted () {
@@ -60,8 +59,7 @@ export default {
       const category = await this.getCategory()
       let topicPostResponse = null
       if (category != null) {
-        this.$set(this, 'categoryId', category.id)
-        topicPostResponse = await this.createTopicPost()
+        topicPostResponse = await this.createTopicPost(category)
       }
       if (!isNull(topicPostResponse) || topicPostResponse) {
         return this.setPosts()
@@ -111,15 +109,15 @@ export default {
       }
       return category
     },
-    async createTopicPost () {
-      const topic = this.buildTopic()
+    async createTopicPost (category) {
+      const topic = this.buildTopic(category)
       let response = null
       try {
         response = await axios.post(`${this.discourseHost}/${this.project}/posts.json`, topic)
       } catch(_) {}
       return !isNull(response)
     },
-    buildTopic () {
+    buildTopic (category) {
       const topicExists = !isNull(this.topicResponse)
       let topic = null
       if (topicExists) {
@@ -132,7 +130,7 @@ export default {
         topic = {
           raw: this.comment,
           title: `Datashare document ${this.documentId.substring(0, 7)}`,
-          category: this.categoryId.toString(),
+          category: category.id,
           archetype: 'regular',
           datashare_document_id: this.documentId,
           skip_validations: true
