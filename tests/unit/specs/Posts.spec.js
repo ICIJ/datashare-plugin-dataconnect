@@ -221,89 +221,44 @@ describe('Posts.vue', () => {
   })
 
   describe('createComment', () => {
-    const getCategoryData = {
-      id: 1,
-      permission: 1,
-      name: 'Datashare Documents for test-datashare',
-      created_by_dataconnect: true,
-      icij_projects_for_category: [
-        {
-          permission_type: 1,
-          group_name: 'test-datashare'
-        }
-      ]
-    }
-
-    describe('category exists', () => {
-      describe('topic exists', () => {
-        it('creates comment', async () => {
-          axios.get.mockResolvedValue(null)
-          wrapper = await shallowMount(Posts, { store })
-
-          const mockFunction = jest.fn().mockReturnValue(getCategoryData)
-          wrapper.vm.getCategory = mockFunction
-
-          axios.get.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
-
-          const text = wrapper.find('textarea')
-          await text.setValue('testing comment')
-          await wrapper.setData({ topicResponse })
-
-          const response = await wrapper.vm.createComment()
-
-          expect(axios.get).toBeCalled()
-          expect(response).toBeTruthy()
-        })
-      })
-
-      describe('topic does not exist', () => {
-        it('creates comment', async () => {
-          axios.get.mockResolvedValue(null)
-          wrapper = await shallowMount(Posts, { store })
-
-          const mockFunction = jest.fn().mockReturnValue(getCategoryData)
-          wrapper.vm.getCategory = mockFunction
-          wrapper.vm.category = { id: 1 }
-          axios.get.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
-
-          const text = wrapper.find('textarea')
-          await text.setValue('testing comment')
-          await wrapper.setData({ topicResponse: null })
-
-          const response = await wrapper.vm.createComment()
-
-          expect(axios.get).toBeCalled()
-          expect(axios.post).toBeCalled()
-          expect(response).toBeTruthy()
-        })
-      })
+    beforeEach(async () => {
+      axios.get.mockResolvedValue(null)
+      wrapper = await shallowMount(Posts, { store })
     })
 
-    describe('click action', () => {
-      it('sets and creates comment', async () => {
-        wrapper = await shallowMount(Posts, { store })
-        const spyCreateComment = jest.spyOn(wrapper.vm, 'createComment');
+    it('should call "createComment" on click', () => {
+      wrapper.vm.createComment = jest.fn()
+      wrapper.find('button').trigger('click')
 
-        await wrapper.find('button').trigger('click')
-
-        expect(spyCreateComment).toHaveBeenCalled()
-      })
+      expect(wrapper.vm.createComment).toBeCalled()
     })
 
-    describe('error occurs', () => {
-      describe('null category', () => {
-        it('returns false', async () => {
-          wrapper = await shallowMount(Posts, { store })
+    it('should create a comment if topic and category exist', async () => {
+      wrapper.vm.getCategory = jest.fn().mockReturnValue({ id: 1 })
+      wrapper.vm.createTopicPost = jest.fn().mockReturnValue({ id: 1 })
+      axios.get.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
+      const response = await wrapper.vm.createComment()
 
-          const mockMethod = jest.fn().mockReturnValue(null)
-          wrapper.vm.getCategory = mockMethod
+      expect(axios.get).toBeCalled()
+      expect(response).toBeTruthy()
+    })
 
-          const response = await wrapper.vm.createComment()
+    it('should create a comment if category exists but topic does not', async () => {
+      wrapper.vm.getCategory = jest.fn().mockReturnValue({ id: 1 })
+      axios.get.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
+      const response = await wrapper.vm.createComment()
 
-          expect(axios.get).toBeCalled()
-          expect(response).toBeFalsy()
-        })
-      })
+      expect(axios.get).toBeCalled()
+      expect(axios.post).toBeCalled()
+      expect(response).toBeTruthy()
+    })
+
+    it('should return false if category does not exist', async () => {
+      wrapper.vm.getCategory = jest.fn().mockReturnValue(null)
+      const response = await wrapper.vm.createComment()
+
+      expect(axios.get).toBeCalled()
+      expect(response).toBeFalsy()
     })
   })
 })
