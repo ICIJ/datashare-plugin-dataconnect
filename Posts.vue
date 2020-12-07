@@ -47,13 +47,10 @@ export default {
   },
   async mounted() {
     let response = null
-
     try {
       response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
     } catch (_) {}
-
     this.$set(this, 'topicResponse', response)
-
     if (!isNull(this.topicResponse)) {
       this.$set(this, 'posts', this.topicResponse.data.topic_view_posts.post_stream.posts)
     }
@@ -61,84 +58,62 @@ export default {
   methods: {
     async createComment () {
       const category = await this.setCategory()
-
       let topicPostResponse = null
       if (category != null) {
         this.$set(this, 'categoryId', category.id)
         topicPostResponse = await this.createTopicPost()
       }
-
       if (!isNull(topicPostResponse) || topicPostResponse) {
         return await this.setPosts()
       } else {
         return false
       }
     },
-
     async setPosts () {
       let response = null
-
       try {
         response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
       } catch(_) {}
-
       if (!isNull(response)) {
         this.$set(this, 'posts', response.data.topic_view_posts.post_stream.posts)
         this.$set(this, 'comment', null)
         this.$set(this, 'topicResponse', response)
-
         return true
       } else if (isNull(response)) {
         return false
       }
     },
-
     async setCategory () {
       const category = await this.getCategory()
       return isNull(category) ? this.createCategory() : category
     },
-
     async createCategory () {
       const data = this.buildCategory()
-
       let category = null
-
       try {
         category = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
       } catch(_) {}
-
       return isNull(category) ? category : category.data.category
     },
-
     async getCategory () {
       let categories = null
-
       try {
         categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
       } catch(_) {}
-
       const filtered = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
-
       return filtered.length > 0 ? filtered[0] : null
     },
-
     async createTopicPost () {
       const topic = this.buildTopic()
-
       let response = null
-
       try {
         response = await axios.post(`${this.discourseHost}/${this.project}/posts.json`, topic)
       } catch(_) {}
-
       return isNull(response) ? false : true
     },
-
     buildTopic () {
       const topicExists = !isNull(this.topicResponse)
-
       let topic
-
       if (topicExists) {
         topic = {
           raw: this.comment,
@@ -155,10 +130,8 @@ export default {
               skip_validations: "true"
           }
       }
-
       return topic
     },
-
     buildCategory () {
       const data = {
         name: `Datashare Documents for ${this.project}`,
@@ -169,7 +142,6 @@ export default {
         },
         created_by_dataconnect: "true"
       }
-
       return data
     }
   }
