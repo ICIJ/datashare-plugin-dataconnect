@@ -64,7 +64,7 @@ export default {
         topicPostResponse = await this.createTopicPost()
       }
       if (!isNull(topicPostResponse) || topicPostResponse) {
-        return await this.setPosts()
+        return this.setPosts()
       } else {
         return false
       }
@@ -79,7 +79,7 @@ export default {
         this.$set(this, 'comment', null)
         this.$set(this, 'topicResponse', response)
         return true
-      } else if (isNull(response)) {
+      } else {
         return false
       }
     },
@@ -88,7 +88,15 @@ export default {
       return isNull(category) ? this.createCategory() : category
     },
     async createCategory () {
-      const data = this.buildCategory()
+      const data = {
+        name: `Datashare Documents for ${this.project}`,
+        color: 'BF1E2E',
+        text_color: 'FFFFFF',
+        permissions: {
+          [this.project]: 1
+        },
+        created_by_dataconnect: true
+      }
       let category = null
       try {
         category = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
@@ -109,40 +117,28 @@ export default {
       try {
         response = await axios.post(`${this.discourseHost}/${this.project}/posts.json`, topic)
       } catch(_) {}
-      return isNull(response) ? false : true
+      return !isNull(response)
     },
     buildTopic () {
       const topicExists = !isNull(this.topicResponse)
-      let topic
+      let topic = null
       if (topicExists) {
         topic = {
           raw: this.comment,
           topic_id: this.topicResponse.data.topic_view_posts.id,
-          skip_validations: "true"
+          skip_validations: true
         }
       } else {
         topic = {
-              raw: this.comment,
-              title: `Datashare document ${this.documentId.substring(0, 7)}`,
-              category: this.categoryId.toString(),
-              archetype: "regular",
-              datashare_document_id: this.documentId,
-              skip_validations: "true"
-          }
+          raw: this.comment,
+          title: `Datashare document ${this.documentId.substring(0, 7)}`,
+          category: this.categoryId.toString(),
+          archetype: 'regular',
+          datashare_document_id: this.documentId,
+          skip_validations: true
+        }
       }
       return topic
-    },
-    buildCategory () {
-      const data = {
-        name: `Datashare Documents for ${this.project}`,
-        color: 'BF1E2E',
-        text_color: 'FFFFFF',
-        permissions: {
-          [this.project]: 1
-        },
-        created_by_dataconnect: "true"
-      }
-      return data
     }
   }
 }
