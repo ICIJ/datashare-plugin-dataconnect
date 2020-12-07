@@ -128,73 +128,43 @@ describe('Posts.vue', () => {
   })
 
   describe('getCategory', () => {
-    it('return an existing category', async () => {
-      const data = existingCategoryData
-
-      axios.get.mockResolvedValue({ data })
+    beforeEach(async () => {
+      axios.get.mockResolvedValue(null)
       wrapper = await shallowMount(Posts, { store })
-      const response = await wrapper.vm.getCategory()
+      axios.get.mockClear()
+    })
 
-      expect(axios.get).toBeCalled()
-      expect(response).toEqual(data.lists.category_list.categories[0])
+    it('should return null if an error occurs', async () => {
+      axios.get.mockRejectedValue()
+      const category = await wrapper.vm.getCategory()
+
+      expect(axios.get).toBeCalledTimes(1)
+      expect(category).toBeNull()
     })
 
     it('should return null if no existing category', async () => {
-      const data = {
-        lists: {
-          category_list: {
-            categories: [
-              {
-                id: 1,
-                permission: 1,
-                name: 'random category 1',
-                created_by_dataconnect: false,
-                icij_projects_for_category: [
-                  {
-                    permission_type: 1,
-                    group_name: 'test-datashare'
-                  }
-                ]
-              },
-              {
-                id: 1,
-                permission: 1,
-                name: 'random category 2',
-                created_by_dataconnect: false,
-                icij_projects_for_category: [
-                  {
-                    permission_type: 1,
-                    group_name: 'test-datashare'
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        topic_view_posts: {
-          post_stream: {
-            posts: []
-          }
-        }
-      }
+      const category = await wrapper.vm.getCategory()
 
-      axios.get.mockResolvedValue({ data })
-      wrapper = await shallowMount(Posts, { store })
-      const response = await wrapper.vm.getCategory()
-
-      expect(axios.get).toBeCalled()
-      expect(response).toEqual(null)
+      expect(axios.get).toBeCalledTimes(1)
+      expect(category).toBeNull()
     })
 
-    describe('error occurs', () => {
-      it('returns null', async () => {
-        axios.get.mockRejectedValue({ status: 404 })
-        wrapper = await shallowMount(Posts, { store })
+    it('should return null if no category created by Dataconnect', async () => {
+      const data = { lists: { category_list: { categories: [{ id: 'category_01' }] } } }
+      axios.get.mockResolvedValue({ data })
+      const category = await wrapper.vm.getCategory()
 
-        const response = await wrapper.vm.getCategory()
+      expect(axios.get).toBeCalledTimes(1)
+      expect(category).toBeNull()
+    })
 
-        expect(response).toEqual(null)
-      })
+    it('should return an existing category', async () => {
+      const data = { lists: { category_list: { categories: [{ id: 'category_01', created_by_dataconnect: true }] } } }
+      axios.get.mockResolvedValue({ data })
+      const category = await wrapper.vm.getCategory()
+
+      expect(axios.get).toBeCalledTimes(1)
+      expect(category).toEqual({ id: 'category_01', created_by_dataconnect: true })
     })
   })
 

@@ -7,7 +7,7 @@
             v-model="comment"
             placeholder="new comment"
         ></textarea>
-        <button class="posts__actions__form-group__create btn btn-primary" @click="createComment()">
+        <button class="posts__actions__form-group__create btn btn-primary mt-2" @click="createComment()">
           Create
         </button>
       </div>
@@ -107,9 +107,11 @@ export default {
       let categories = null
       try {
         categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
-      } catch(_) {}
-      const filtered = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
-      return filtered.length > 0 ? filtered[0] : null
+        const filtered = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
+        return get(filtered, '0', null)
+      } catch(_) {
+        return null
+      }
     },
     async createTopicPost () {
       const topic = this.buildTopic()
