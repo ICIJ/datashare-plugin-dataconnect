@@ -24,32 +24,6 @@ describe('Posts.vue', () => {
     }
   }
 
-  const existingCategoryData = {
-    lists: {
-      category_list: {
-        categories: [
-          {
-            id: 1,
-            permission: 1,
-            name: 'Datashare Documents for test-datashare',
-            created_by_dataconnect: true,
-            icij_projects_for_category: [
-              {
-                permission_type: 1,
-                group_name: 'test-datashare'
-              }
-            ]
-          }
-        ]
-      }
-    },
-    topic_view_posts: {
-      post_stream: {
-        posts: []
-      }
-    }
-  }
-
   const postData = {
     id: 0,
     name: null,
@@ -134,37 +108,46 @@ describe('Posts.vue', () => {
       axios.get.mockClear()
     })
 
-    it('should return null if an error occurs', async () => {
+    it('should create a category if the search of a category return an error', async () => {
       axios.get.mockRejectedValue()
+      const mockFunction = jest.fn().mockResolvedValue({ id: 1 })
+      wrapper.vm.createCategory = mockFunction
       const category = await wrapper.vm.getCategory()
 
       expect(axios.get).toBeCalledTimes(1)
-      expect(category).toBeNull()
+      expect(mockFunction).toBeCalledTimes(1)
+      expect(category).toEqual({ id: 1 })
     })
 
-    it('should return null if no existing category', async () => {
+    it('should create a category if the search of a category return null', async () => {
+      const mockFunction = jest.fn().mockResolvedValue({ id: 2 })
+      wrapper.vm.createCategory = mockFunction
       const category = await wrapper.vm.getCategory()
 
       expect(axios.get).toBeCalledTimes(1)
-      expect(category).toBeNull()
+      expect(mockFunction).toBeCalledTimes(1)
+      expect(category).toEqual({ id: 2 })
     })
 
-    it('should return null if no category created by Dataconnect', async () => {
-      const data = { lists: { category_list: { categories: [{ id: 'category_01' }] } } }
+    it('should create a category if the search of a category return no category created by Dataconnect', async () => {
+      const data = { lists: { category_list: { categories: [{ id: 4 }] } } }
       axios.get.mockResolvedValue({ data })
+      const mockFunction = jest.fn().mockResolvedValue({ id: 3 })
+      wrapper.vm.createCategory = mockFunction
       const category = await wrapper.vm.getCategory()
 
       expect(axios.get).toBeCalledTimes(1)
-      expect(category).toBeNull()
+      expect(mockFunction).toBeCalledTimes(1)
+      expect(category).toEqual({ id: 3 })
     })
 
     it('should return an existing category', async () => {
-      const data = { lists: { category_list: { categories: [{ id: 'category_01', created_by_dataconnect: true }] } } }
+      const data = { lists: { category_list: { categories: [{ id: 5, created_by_dataconnect: true }] } } }
       axios.get.mockResolvedValue({ data })
       const category = await wrapper.vm.getCategory()
 
       expect(axios.get).toBeCalledTimes(1)
-      expect(category).toEqual({ id: 'category_01', created_by_dataconnect: true })
+      expect(category).toEqual({ id: 5, created_by_dataconnect: true })
     })
   })
 
@@ -172,6 +155,7 @@ describe('Posts.vue', () => {
     it('should creates a category', async () => {
       const data = newCategoryData
 
+      axios.get.mockResolvedValue(null)
       axios.post.mockResolvedValue({ data })
       wrapper = await shallowMount(Posts, { store })
       const response = await wrapper.vm.createCategory()
@@ -189,34 +173,6 @@ describe('Posts.vue', () => {
 
         expect(response).toEqual(null)
       })
-    })
-  })
-
-  describe('setCategory', () => {
-    it('should return the existing category', async () => {
-      const data = existingCategoryData
-
-      axios.get.mockResolvedValue({ data })
-      wrapper = await shallowMount(Posts, { store })
-      const response = await wrapper.vm.setCategory()
-
-      expect(axios.get).toBeCalled()
-      expect(response).toEqual(data.lists.category_list.categories[0])
-    })
-
-    it('should create the category if it does not exist', async () => {
-      const data = newCategoryData
-
-      axios.get.mockResolvedValue({ data })
-      axios.post.mockResolvedValue({ data })
-      wrapper = await shallowMount(Posts, { store })
-      const mockMethod = jest.fn().mockReturnValue(null)
-      wrapper.vm.getCategory = mockMethod
-      const response = await wrapper.vm.setCategory()
-
-      expect(mockMethod).toBeCalled()
-      expect(axios.post).toBeCalled()
-      expect(response).toEqual(data.category)
     })
   })
 
@@ -283,10 +239,13 @@ describe('Posts.vue', () => {
     describe('category exists', () => {
       describe('topic exists', () => {
         it('creates comment', async () => {
+          axios.get.mockResolvedValue(null)
           wrapper = await shallowMount(Posts, { store })
 
-          const mockMethod = jest.fn().mockReturnValue(getCategoryData)
-          wrapper.vm.setCategory = mockMethod
+          const mockFunction = jest.fn().mockReturnValue(getCategoryData)
+          wrapper.vm.getCategory = mockFunction
+
+          axios.get.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
 
           const text = wrapper.find('textarea')
           await text.setValue('testing comment')
@@ -304,7 +263,7 @@ describe('Posts.vue', () => {
           wrapper = await shallowMount(Posts, { store })
 
           const mockMethod = jest.fn().mockReturnValue(getCategoryData)
-          wrapper.vm.setCategory = mockMethod
+          wrapper.vm.getCategory = mockMethod
 
           const text = wrapper.find('textarea')
           await text.setValue('testing comment')
@@ -336,7 +295,7 @@ describe('Posts.vue', () => {
           wrapper = await shallowMount(Posts, { store })
 
           const mockMethod = jest.fn().mockReturnValue(null)
-          wrapper.vm.setCategory = mockMethod
+          wrapper.vm.getCategory = mockMethod
 
           const response = await wrapper.vm.createComment()
 

@@ -45,7 +45,7 @@ export default {
       categoryId: null
     }
   },
-  async mounted() {
+  async mounted () {
     let response = null
     try {
       response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
@@ -57,7 +57,7 @@ export default {
   },
   methods: {
     async createComment () {
-      const category = await this.setCategory()
+      const category = await this.getCategory()
       let topicPostResponse = null
       if (category != null) {
         this.$set(this, 'categoryId', category.id)
@@ -83,10 +83,6 @@ export default {
         return false
       }
     },
-    async setCategory () {
-      const category = await this.getCategory()
-      return isNull(category) ? this.createCategory() : category
-    },
     async createCategory () {
       const data = {
         name: `Datashare Documents for ${this.project}`,
@@ -104,14 +100,16 @@ export default {
       return isNull(category) ? category : category.data.category
     },
     async getCategory () {
-      let categories = null
+      let category = null
       try {
-        categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
+        const categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
         const filtered = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
-        return get(filtered, '0', null)
-      } catch(_) {
-        return null
+        category = get(filtered, '0', null)
+      } catch(_) {}
+      if (isNull(category)) {
+        category = await this.createCategory()
       }
+      return category
     },
     async createTopicPost () {
       const topic = this.buildTopic()
