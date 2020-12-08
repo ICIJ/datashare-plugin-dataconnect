@@ -4,25 +4,25 @@
       <div class="posts__actions__form-group">
         <textarea
             class="posts__actions__form-group-textarea form-control rounded-0"
-            v-model="comment"
-            placeholder="new comment"
+            v-model="commentText"
+            placeholder="Type your comment here."
         ></textarea>
         <button class="posts__actions__form-group__create btn btn-primary" @click="createComment()">
           Create
         </button>
       </div>
     </div>
-    <div v-for="post in posts" :key="post.id" class="posts__post">
+    <div v-for="comment in comments" :key="comment.id" class="posts__post">
       <div class="posts__post__header row">
         <div class="posts__post__header__delete p-2 col-2"></div>
         <div class="posts__post__header__author col-5 font-weight-bold">
-          {{ post.username }}
+          {{ comment.username }}
         </div>
         <div class="posts__post__header__date col-5 text-right">
-          {{ post.created_at }}
+          {{ comment.created_at }}
         </div>
       </div>
-      <div class="posts__post__text" v-html="post.cooked"></div>
+      <div class="posts__post__text" v-html="comment.cooked"></div>
       <a :href="postUrl(post)">Edit on I-Hub</a>
     </div>
   </div>
@@ -36,53 +36,44 @@ export default {
   name: 'Posts',
   data() {
     return {
-      comment: '',
+      commentText: '',
       discourseHost: 'http://localhost:8888/api/proxy',
       documentId: this.$store.state.document.idAndRouting.id,
-      posts: [],
+      comments: [],
       project: this.$store.state.search.index,
       topicResponse: null
     }
   },
-  async mounted () {
-    let response = null
-    try {
-      response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
-    } catch (_) {}
-    this.$set(this, 'topicResponse', response)
-    if (!isNull(this.topicResponse)) {
-      this.$set(this, 'posts', this.topicResponse.data.topic_view_posts.post_stream.posts)
-    }
+  mounted () {
+    this.getComments()
   },
   methods: {
     postUrl (post) {
       return post.full_url
     },
-    async createComment () {
-      const category = await this.getCategory()
-      let topicPostResponse = null
-      if (category != null) {
-        topicPostResponse = await this.createTopicPost(category)
-      }
-      if (!isNull(topicPostResponse) || topicPostResponse) {
-        return this.setPosts()
-      } else {
-        return false
-      }
-    },
-    async setPosts () {
+    async getComments () {
       let response = null
       try {
         response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
-      } catch(_) {}
+      } catch (_) {}
       if (!isNull(response)) {
-        this.$set(this, 'posts', response.data.topic_view_posts.post_stream.posts)
-        this.$set(this, 'comment', null)
         this.$set(this, 'topicResponse', response)
+        this.$set(this, 'comments', response.data.topic_view_posts.post_stream.posts)
+        this.$set(this, 'commentText', '')
         return true
       } else {
         return false
       }
+    },
+    async createComment () {
+      const category = await this.getCategory()
+      if (!isNull(category)) {
+        const topic = await this.createTopic(category)
+        if (!isNull(topic)) {
+          return this.getComments()
+        }
+      }
+      return false
     },
     async createCategory () {
       const data = {
@@ -112,7 +103,7 @@ export default {
       }
       return category
     },
-    async createTopicPost (category) {
+    async createTopic (category) {
       const topic = this.buildTopic(category)
       let response = null
       try {
@@ -124,13 +115,13 @@ export default {
       let topic = null
       if (!isNull(this.topicResponse)) {
         topic = {
-          raw: this.comment,
+          raw: this.commentText,
           topic_id: this.topicResponse.data.topic_view_posts.id,
           skip_validations: true
         }
       } else {
         topic = {
-          raw: this.comment,
+          raw: this.commentText,
           title: `Datashare document ${this.documentId.substring(0, 7)}`,
           category: category.id,
           archetype: 'regular',

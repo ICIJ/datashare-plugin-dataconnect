@@ -21,35 +21,32 @@ describe('Posts.vue', () => {
 
   afterAll(() => jest.unmock('axios'))
 
-  describe('getPosts', () => {
+  describe('getComments', () => {
     it('should return empty array if an error occurs', async () => {
       axios.get.mockRejectedValue()
-      wrapper = await shallowMount(Posts, { store })
-      await wrapper.vm.$nextTick()
+      await wrapper.vm.getComments()
 
       expect(axios.get).toBeCalledTimes(1)
-      expect(wrapper.vm.posts).toHaveLength(0)
-      expect(wrapper.vm.posts).toEqual([])
+      expect(wrapper.vm.comments).toHaveLength(0)
+      expect(wrapper.vm.comments).toEqual([])
     })
 
     it('should return empty array if no topics', async () => {
       axios.get.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
-      wrapper = await shallowMount(Posts, { store })
-      await wrapper.vm.$nextTick()
+      await wrapper.vm.getComments()
 
       expect(axios.get).toBeCalledTimes(1)
-      expect(wrapper.vm.posts).toHaveLength(0)
-      expect(wrapper.vm.posts).toEqual([])
+      expect(wrapper.vm.comments).toHaveLength(0)
+      expect(wrapper.vm.comments).toEqual([])
     })
 
     it('should retrieve topics if any', async () => {
       axios.get.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [{ id: 1 }, { id: 2 }] } } } })
-      wrapper = await shallowMount(Posts, { store })
-      await wrapper.vm.$nextTick()
+      await wrapper.vm.getComments()
 
       expect(axios.get).toBeCalledTimes(1)
-      expect(wrapper.vm.posts).toHaveLength(2)
-      expect(wrapper.vm.posts).toEqual([{ id: 1 }, { id: 2 }])
+      expect(wrapper.vm.comments).toHaveLength(2)
+      expect(wrapper.vm.comments).toEqual([{ id: 1 }, { id: 2 }])
     })
   })
 
@@ -114,16 +111,16 @@ describe('Posts.vue', () => {
     })
   })
 
-  describe('createTopicPost', () => {
+  describe('createTopic', () => {
     beforeEach(async () => {
       axios.post.mockClear()
-      wrapper.vm.comment = 'testing comment'
+      wrapper.vm.commentText = 'testing comment'
       wrapper.vm.topicResponse = { data: { topic_view_posts: { id: 1 } } }
     })
 
     it('should return false if an error occurs', async () => {
       axios.post.mockRejectedValue()
-      const response = await wrapper.vm.createTopicPost({ id: 1 })
+      const response = await wrapper.vm.createTopic({ id: 1 })
 
       expect(axios.post).toBeCalledTimes(1)
       expect(response).toBeFalsy()
@@ -132,7 +129,7 @@ describe('Posts.vue', () => {
     it('should create a topic with a post if the topic does not exist', async () => {
       axios.post.mockResolvedValue({})
       wrapper.vm.topicResponse = null
-      const response = await wrapper.vm.createTopicPost({ id: 1 })
+      const response = await wrapper.vm.createTopic({ id: 1 })
 
       expect(axios.post).toBeCalledTimes(1)
       expect(response).toBeTruthy()
@@ -140,7 +137,7 @@ describe('Posts.vue', () => {
 
     it('should create a post within a topic if the topic exists', async () => {
       axios.post.mockResolvedValue({})
-      const response = await wrapper.vm.createTopicPost({ id: 1 })
+      const response = await wrapper.vm.createTopic({ id: 1 })
 
       expect(axios.post).toBeCalledTimes(1)
       expect(response).toBeTruthy()
@@ -155,9 +152,17 @@ describe('Posts.vue', () => {
       expect(wrapper.vm.createComment).toBeCalled()
     })
 
+    it('should return false if category does not exist', async () => {
+      wrapper.vm.getCategory = jest.fn().mockReturnValue(null)
+      const response = await wrapper.vm.createComment()
+
+      expect(axios.get).not.toBeCalled()
+      expect(response).toBeFalsy()
+    })
+
     it('should create a comment if topic and category exist', async () => {
       wrapper.vm.getCategory = jest.fn().mockReturnValue({ id: 1 })
-      wrapper.vm.createTopicPost = jest.fn().mockReturnValue({ id: 1 })
+      wrapper.vm.createTopic = jest.fn().mockReturnValue({ id: 1 })
       axios.get.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
       const response = await wrapper.vm.createComment()
 
@@ -173,14 +178,6 @@ describe('Posts.vue', () => {
       expect(axios.get).toBeCalled()
       expect(axios.post).toBeCalled()
       expect(response).toBeTruthy()
-    })
-
-    it('should return false if category does not exist', async () => {
-      wrapper.vm.getCategory = jest.fn().mockReturnValue(null)
-      const response = await wrapper.vm.createComment()
-
-      expect(axios.get).not.toBeCalled()
-      expect(response).toBeFalsy()
     })
   })
 })
