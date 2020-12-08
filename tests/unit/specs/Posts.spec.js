@@ -12,18 +12,6 @@ describe('Posts.vue', () => {
   const state = { document: { idAndRouting: { id: '1' } }, search: { index: 'test-datashare' } }
   const store = new Vuex.Store({ state })
 
-  const newCategoryData = {
-    category: {
-      id: 1,
-      name: 'Datashare Documents for test-datashare',
-    },
-    topic_view_posts: {
-      post_stream: {
-        posts: []
-      }
-    }
-  }
-
   const postData = {
     id: 0,
     name: null,
@@ -152,27 +140,24 @@ describe('Posts.vue', () => {
   })
 
   describe('createCategory', () => {
-    it('should creates a category', async () => {
-      const data = newCategoryData
-
+    beforeEach(async () => {
       axios.get.mockResolvedValue(null)
-      axios.post.mockResolvedValue({ data })
       wrapper = await shallowMount(Posts, { store })
-      const response = await wrapper.vm.createCategory()
-
-      expect(axios.post).toBeCalled()
-      expect(response).toEqual(data.category)
     })
 
-    describe('error occurs', () => {
-      it('returns null', async () => {
-        axios.post.mockRejectedValue({ status: 404 })
-        wrapper = await shallowMount(Posts, { store })
+    it('should creates a category', async () => {
+      axios.post.mockResolvedValue({ data: { category: { id: 1 } } })
+      const category = await wrapper.vm.createCategory()
 
-        const response = await wrapper.vm.createCategory()
+      expect(axios.post).toBeCalledTimes(1)
+      expect(category).toEqual({ id: 1 })
+    })
 
-        expect(response).toEqual(null)
-      })
+    it('should return null if an error occurs', async () => {
+      axios.post.mockRejectedValue()
+      const response = await wrapper.vm.createCategory()
+
+      expect(response).toBeNull()
     })
   })
 
@@ -204,19 +189,17 @@ describe('Posts.vue', () => {
       expect(response).toBeTruthy()
     })
 
-    describe('error occurs', () => {
-      it('returns false', async () => {
-        axios.post.mockRejectedValue({ status: 404 })
-        wrapper = await shallowMount(Posts, { store })
+    it('returns false if error occurs', async () => {
+      axios.post.mockRejectedValue({ status: 404 })
+      wrapper = await shallowMount(Posts, { store })
 
-        const text = wrapper.find('textarea')
-        await text.setValue('testing comment')
-        await wrapper.setData({ topicResponse })
+      const text = wrapper.find('textarea')
+      await text.setValue('testing comment')
+      await wrapper.setData({ topicResponse })
 
-        const response = await wrapper.vm.createTopicPost()
+      const response = await wrapper.vm.createTopicPost()
 
-        expect(response).toBeFalsy()
-      })
+      expect(response).toBeFalsy()
     })
   })
 

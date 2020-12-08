@@ -91,11 +91,11 @@ export default {
         },
         created_by_dataconnect: true
       }
-      let category = null
+      let response = null
       try {
-        category = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
+        response = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
       } catch(_) {}
-      return isNull(category) ? category : category.data.category
+      return isNull(response) ? response : response.data.category
     },
     async getCategory () {
       let category = null
