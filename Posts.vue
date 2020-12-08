@@ -84,7 +84,7 @@ export default {
       }
       let category = null
       try {
-        const response = await this.sendAction(`${this.discourseHost}/${this.project}/categories.json`, { method: 'POST', data: data })
+        const response = await this.sendAction(`${this.discourseHost}/${this.project}/categories.json`, { method: 'POST', data })
         category = get(response, 'data.category', null)
       } catch(_) {}
       return category
@@ -104,18 +104,18 @@ export default {
       return category
     },
     async createTopic (category) {
-      let topic = {
+      let data = {
         raw: this.commentText,
         skip_validations: true
       }
       if (!isNull(this.topicId)) {
-        topic = {
-          ...topic,
+        data = {
+          ...data,
           topic_id: this.topicId
         }
       } else {
-        topic = {
-          ...topic,
+        data = {
+          ...data,
           title: `Datashare document ${this.documentId.substring(0, 7)}`,
           category: category.id,
           archetype: 'regular',
@@ -124,14 +124,14 @@ export default {
       }
       let response = null
       try {
-        response = await this.sendAction(`${this.discourseHost}/${this.project}/posts.json`, { method: 'POST', data: topic })
+        response = await this.sendAction(`${this.discourseHost}/${this.project}/posts.json`, { method: 'POST', data })
       } catch(_) {}
       return !isNull(response)
     },
     async sendAction (url, config = {}) {
       let response = null
       try {
-        response = await axios.request({ url: url, ...config })
+        response = await axios.request({ url, ...config })
       } catch (_) {}
       if (!isNull(response.data.errors) || isNull(response)) {
         return null
@@ -142,7 +142,8 @@ export default {
   }
 }
 </script>
-<style lang="scss">
+
+<style lang="scss" scoped>
   .comments {
     &__comment {
       border: 1px solid lightgray;

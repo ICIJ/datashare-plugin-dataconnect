@@ -14,17 +14,15 @@ describe('Posts.vue', () => {
   let wrapper = null
 
   beforeEach(async () => {
-    axios.get.mockResolvedValue(null)
     wrapper = await shallowMount(Posts, { store })
     axios.request.mockClear()
-    jest.fn().mockClear()
   })
 
   afterAll(() => jest.unmock('axios'))
 
   describe('getComments', () => {
     it('should return empty array if an error occurs', async () => {
-      axios.get.mockRejectedValue()
+      axios.request.mockRejectedValue()
       await wrapper.vm.getComments()
 
       expect(axios.request).toBeCalledTimes(1)
@@ -33,7 +31,8 @@ describe('Posts.vue', () => {
     })
 
     it('should return empty array if no topics', async () => {
-      axios.get.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
+      wrapper.vm.comments = [{ id: 1 }]
+      axios.request.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
       await wrapper.vm.getComments()
 
       expect(axios.request).toBeCalledTimes(1)
@@ -42,13 +41,10 @@ describe('Posts.vue', () => {
     })
 
     it('should retrieve topics if any', async () => {
-      const response = { data: { topic_view_posts: { post_stream: { posts: [{ id: 1 }, { id: 2 }] } } } }
-      const mockFunction = jest.fn().mockResolvedValue(response)
-      wrapper.vm.sendAction = mockFunction
-      axios.get.mockResolvedValue(response)
+      axios.request.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [{ id: 1 }, { id: 2 }] } } } })
       await wrapper.vm.getComments()
 
-      expect(mockFunction).toBeCalledTimes(1)
+      expect(axios.request).toBeCalledTimes(1)
       expect(wrapper.vm.comments).toHaveLength(2)
       expect(wrapper.vm.comments).toEqual([{ id: 1 }, { id: 2 }])
     })
@@ -77,14 +73,11 @@ describe('Posts.vue', () => {
     })
 
     it('should create a category if the search of a category return no category created by Dataconnect', async () => {
-      const data = { lists: { category_list: { categories: [{ id: 4 }] } } }
-      axios.get.mockResolvedValue({ data })
-      const mockFunction = jest.fn().mockResolvedValue({ id: 3 })
-      wrapper.vm.createCategory = mockFunction
+      const data = { lists: { category_list: { categories: [{ id: 4 }] } }, category: { id: 3 } }
+      axios.request.mockResolvedValue({ data })
       const category = await wrapper.vm.getCategory()
 
-      expect(axios.request).toBeCalledTimes(1)
-      expect(mockFunction).toBeCalledTimes(1)
+      expect(axios.request).toBeCalledTimes(2)
       expect(category).toEqual({ id: 3 })
     })
 
@@ -160,7 +153,7 @@ describe('Posts.vue', () => {
       wrapper.vm.getCategory = jest.fn().mockReturnValue(null)
       const response = await wrapper.vm.createComment()
 
-      expect(axios.get).not.toBeCalled()
+      expect(axios.request).not.toBeCalled()
       expect(response).toBeFalsy()
     })
 
