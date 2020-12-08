@@ -55,7 +55,7 @@ export default {
     async getComments () {
       let response = null
       try {
-        response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
+        response = await this.sendAction(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`, { method: 'GET' })
       } catch (_) {}
       if (!isNull(response)) {
         this.$set(this, 'topicId', get(response, 'data.topic_view_posts.id', null))
@@ -86,7 +86,7 @@ export default {
       }
       let category = null
       try {
-        const response = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
+        const response = await this.sendAction(`${this.discourseHost}/${this.project}/categories.json`, { method: 'POST', data: data })
         category = get(response, 'data.category', null)
       } catch(_) {}
       return category
@@ -94,7 +94,7 @@ export default {
     async getCategory () {
       let category = null
       try {
-        const categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
+        const categories = await this.sendAction(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`, { method: 'GET' })
         const categoriesCreatedByDataconnect = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
         category = get(categoriesCreatedByDataconnect, '0', null)
       } catch(_) {}
@@ -125,9 +125,18 @@ export default {
       }
       let response = null
       try {
-        response = await axios.post(`${this.discourseHost}/${this.project}/posts.json`, topic)
+        response = await this.sendAction(`${this.discourseHost}/${this.project}/posts.json`, { method: 'POST', data: topic })
       } catch(_) {}
       return !isNull(response)
+    },
+    async sendAction (url, config = {}) {
+      try {
+        const response = await axios.request({ url: url, ...config })
+        return response ? response : null
+      } catch (_) {}
+      if (!isNull(response.errors)) {
+        return null
+      }
     }
   }
 }
