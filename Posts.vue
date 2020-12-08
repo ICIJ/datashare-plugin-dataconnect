@@ -40,7 +40,6 @@ export default {
       documentId: this.$store.state.document.idAndRouting.id,
       posts: [],
       project: this.$store.state.search.index,
-      topicExists: null,
       topicResponse: null
     }
   },
@@ -118,9 +117,8 @@ export default {
       return !isNull(response)
     },
     buildTopic (category) {
-      const topicExists = !isNull(this.topicResponse)
       let topic = null
-      if (topicExists) {
+      if (!isNull(this.topicResponse)) {
         topic = {
           raw: this.comment,
           topic_id: this.topicResponse.data.topic_view_posts.id,

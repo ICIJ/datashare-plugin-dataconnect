@@ -13,56 +13,47 @@ describe('Posts.vue', () => {
   const store = new Vuex.Store({ state })
   let wrapper = null
 
+  beforeEach(async () => {
+    axios.get.mockResolvedValue(null)
+    wrapper = await shallowMount(Posts, { store })
+    axios.get.mockClear()
+  })
+
   afterAll(() => jest.unmock('axios'))
 
-  describe('posts', () => {
-    it('should retrieve topics if any', async () => {
-      const data = {
-        topic_view_posts: {
-          id: 1,
-          post_stream: {
-            posts: [
-              {
-                id: 1,
-                username: 'testuser',
-                created_at: '2020-10-16T15:21:29.039Z',
-                cooked: '<p>trying to see if it creates a topic</p>'
-              },
-              {
-                id: 2,
-                username: 'testuser2',
-                created_at: '2020-10-16T17:00:29.039Z',
-                cooked: '<p>trying to see if it creates a second topic</p>'
-              }
-            ]
-          }
-        }
-      }
-      axios.get.mockResolvedValue({ status: 200, data })
+  describe('getPosts', () => {
+    it('should return empty array if an error occurs', async () => {
+      axios.get.mockRejectedValue()
       wrapper = await shallowMount(Posts, { store })
       await wrapper.vm.$nextTick()
 
-      expect(axios.get).toBeCalled()
-      expect(wrapper.vm.posts).toEqual(data.topic_view_posts.post_stream.posts)
+      expect(axios.get).toBeCalledTimes(1)
+      expect(wrapper.vm.posts).toHaveLength(0)
+      expect(wrapper.vm.posts).toEqual([])
     })
 
-    it('should return null if no posts', async () => {
-      axios.get.mockRejectedValue({ status: 404, data: null })
+    it('should return empty array if no topics', async () => {
+      axios.get.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
       wrapper = await shallowMount(Posts, { store })
       await wrapper.vm.$nextTick()
 
-      expect(axios.get).toBeCalled()
+      expect(axios.get).toBeCalledTimes(1)
       expect(wrapper.vm.posts).toHaveLength(0)
+      expect(wrapper.vm.posts).toEqual([])
+    })
+
+    it('should retrieve topics if any', async () => {
+      axios.get.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [{ id: 1 }, { id: 2 }] } } } })
+      wrapper = await shallowMount(Posts, { store })
+      await wrapper.vm.$nextTick()
+
+      expect(axios.get).toBeCalledTimes(1)
+      expect(wrapper.vm.posts).toHaveLength(2)
+      expect(wrapper.vm.posts).toEqual([{ id: 1 }, { id: 2 }])
     })
   })
 
   describe('getCategory', () => {
-    beforeEach(async () => {
-      axios.get.mockResolvedValue(null)
-      wrapper = await shallowMount(Posts, { store })
-      axios.get.mockClear()
-    })
-
     it('should create a category if the search of a category return an error', async () => {
       axios.get.mockRejectedValue()
       const mockFunction = jest.fn().mockResolvedValue({ id: 1 })
@@ -107,11 +98,6 @@ describe('Posts.vue', () => {
   })
 
   describe('createCategory', () => {
-    beforeEach(async () => {
-      axios.get.mockResolvedValue(null)
-      wrapper = await shallowMount(Posts, { store })
-    })
-
     it('should creates a category', async () => {
       axios.post.mockResolvedValue({ data: { category: { id: 1 } } })
       const category = await wrapper.vm.createCategory()
@@ -130,9 +116,7 @@ describe('Posts.vue', () => {
 
   describe('createTopicPost', () => {
     beforeEach(async () => {
-      axios.get.mockResolvedValue(null)
       axios.post.mockClear()
-      wrapper = await shallowMount(Posts, { store })
       wrapper.vm.comment = 'testing comment'
       wrapper.vm.topicResponse = { data: { topic_view_posts: { id: 1 } } }
     })
@@ -164,11 +148,6 @@ describe('Posts.vue', () => {
   })
 
   describe('createComment', () => {
-    beforeEach(async () => {
-      axios.get.mockResolvedValue(null)
-      wrapper = await shallowMount(Posts, { store })
-    })
-
     it('should call "createComment" on click', () => {
       wrapper.vm.createComment = jest.fn()
       wrapper.find('button').trigger('click')
@@ -200,7 +179,7 @@ describe('Posts.vue', () => {
       wrapper.vm.getCategory = jest.fn().mockReturnValue(null)
       const response = await wrapper.vm.createComment()
 
-      expect(axios.get).toBeCalled()
+      expect(axios.get).not.toBeCalled()
       expect(response).toBeFalsy()
     })
   })
