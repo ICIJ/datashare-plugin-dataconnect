@@ -115,7 +115,7 @@ describe('Posts.vue', () => {
     beforeEach(async () => {
       axios.post.mockClear()
       wrapper.vm.commentText = 'testing comment'
-      wrapper.vm.topicResponse = { data: { topic_view_posts: { id: 1 } } }
+      wrapper.vm.topicId = 1
     })
 
     it('should return false if an error occurs', async () => {
@@ -128,7 +128,7 @@ describe('Posts.vue', () => {
 
     it('should create a topic with a post if the topic does not exist', async () => {
       axios.post.mockResolvedValue({})
-      wrapper.vm.topicResponse = null
+      wrapper.vm.topicId = null
       const response = await wrapper.vm.createTopic({ id: 1 })
 
       expect(axios.post).toBeCalledTimes(1)

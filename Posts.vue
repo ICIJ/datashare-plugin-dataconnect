@@ -36,12 +36,12 @@ export default {
   name: 'Posts',
   data() {
     return {
+      comments: [],
       commentText: '',
       discourseHost: 'http://localhost:8888/api/proxy',
       documentId: this.$store.state.document.idAndRouting.id,
-      comments: [],
       project: this.$store.state.search.index,
-      topicResponse: null
+      topicId: null
     }
   },
   mounted () {
@@ -57,13 +57,11 @@ export default {
         response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
       } catch (_) {}
       if (!isNull(response)) {
-        this.$set(this, 'topicResponse', response)
-        this.$set(this, 'comments', response.data.topic_view_posts.post_stream.posts)
+        this.$set(this, 'topicId', get(response, 'data.topic_view_posts.id', null))
+        this.$set(this, 'comments', get(response, 'data.topic_view_posts.post_stream.posts', []))
         this.$set(this, 'commentText', '')
-        return true
-      } else {
-        return false
       }
+      return this.comments
     },
     async createComment () {
       const category = await this.getCategory()
@@ -85,51 +83,50 @@ export default {
         },
         created_by_dataconnect: true
       }
-      let response = null
+      let category = null
       try {
-        response = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
+        const response = await axios.post(`${this.discourseHost}/${this.project}/categories.json`, data)
+        category = get(response, 'data.category', null)
       } catch(_) {}
-      return isNull(response) ? response : response.data.category
+      return category
     },
     async getCategory () {
       let category = null
       try {
         const categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
-        const filtered = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
-        category = get(filtered, '0', null)
+        const categoriesCreatedByDataconnect = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
+        category = get(categoriesCreatedByDataconnect, '0', null)
       } catch(_) {}
+      // If category does not exist, create one
       if (isNull(category)) {
         category = await this.createCategory()
       }
       return category
     },
     async createTopic (category) {
-      const topic = this.buildTopic(category)
+      let topic = {
+        raw: this.commentText,
+        skip_validations: true
+      }
+      if (!isNull(this.topicId)) {
+        topic = {
+          ...topic,
+          topic_id: this.topicId
+        }
+      } else {
+        topic = {
+          ...topic,
+          title: `Datashare document ${this.documentId.substring(0, 7)}`,
+          category: category.id,
+          archetype: 'regular',
+          datashare_document_id: this.documentId
+        }
+      }
       let response = null
       try {
         response = await axios.post(`${this.discourseHost}/${this.project}/posts.json`, topic)
       } catch(_) {}
       return !isNull(response)
-    },
-    buildTopic (category) {
-      let topic = null
-      if (!isNull(this.topicResponse)) {
-        topic = {
-          raw: this.commentText,
-          topic_id: this.topicResponse.data.topic_view_posts.id,
-          skip_validations: true
-        }
-      } else {
-        topic = {
-          raw: this.commentText,
-          title: `Datashare document ${this.documentId.substring(0, 7)}`,
-          category: category.id,
-          archetype: 'regular',
-          datashare_document_id: this.documentId,
-          skip_validations: true
-        }
-      }
-      return topic
     }
   }
 }
