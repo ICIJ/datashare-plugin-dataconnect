@@ -23,7 +23,7 @@
         </div>
       </div>
       <div class="posts__post__text" v-html="comment.cooked"></div>
-      <a :href="postUrl(post)">Edit on I-Hub</a>
+      <a :href="postUrl(comment)">Edit on I-Hub</a>
     </div>
   </div>
 </template>
@@ -48,8 +48,8 @@ export default {
     this.getComments()
   },
   methods: {
-    postUrl (post) {
-      return post.full_url
+    postUrl (comment) {
+      return comment.full_url
     },
     async getComments () {
       let response = null
