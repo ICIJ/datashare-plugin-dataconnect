@@ -7,7 +7,7 @@
             v-model="comment"
             placeholder="new comment"
         ></textarea>
-        <button class="posts__actions__form-group__create btn btn-primary mt-2" @click="createComment()">
+        <button class="posts__actions__form-group__create btn btn-primary" @click="createComment()">
           Create
         </button>
       </div>
@@ -23,6 +23,7 @@
         </div>
       </div>
       <div class="posts__post__text" v-html="post.cooked"></div>
+      <a :href="postUrl(post)">Edit on I-Hub</a>
     </div>
   </div>
 </template>
@@ -54,6 +55,9 @@ export default {
     }
   },
   methods: {
+    postUrl (post) {
+      return post.full_url
+    },
     async createComment () {
       const category = await this.getCategory()
       let topicPostResponse = null
