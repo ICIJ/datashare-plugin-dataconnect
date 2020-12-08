@@ -11,39 +11,6 @@ jest.mock('axios')
 describe('Posts.vue', () => {
   const state = { document: { idAndRouting: { id: '1' } }, search: { index: 'test-datashare' } }
   const store = new Vuex.Store({ state })
-
-  const postData = {
-    id: 0,
-    name: null,
-    username: 'currentuser',
-    post_type: 1,
-    post_number: 1
-  }
-
-  const topicResponse = {
-    data: {
-      topic_view_posts: {
-        id: 1,
-        post_stream: {
-          posts: [
-            {
-              id: 1,
-              username: 'testuser',
-              created_at: '2020-10-16T15:21:29.039Z',
-              cooked: '<p>trying to see if it creates a topic</p>'
-            },
-            {
-              id: 2,
-              username: 'testuser2',
-              created_at: '2020-10-16T17:00:29.039Z',
-              cooked: '<p>trying to see if it creates a second topic</p>'
-            }
-          ]
-        }
-      }
-    }
-  }
-
   let wrapper = null
 
   afterAll(() => jest.unmock('axios'))
@@ -162,44 +129,37 @@ describe('Posts.vue', () => {
   })
 
   describe('createTopicPost', () => {
-    it('should create a topic with a post, if the topic does not exist', async () => {
+    beforeEach(async () => {
       axios.get.mockResolvedValue(null)
+      axios.post.mockClear()
       wrapper = await shallowMount(Posts, { store })
-
-      wrapper.vm.topicResponse = null
       wrapper.vm.comment = 'testing comment'
-      axios.post.mockResolvedValue({ status: 200, postData })
+      wrapper.vm.topicResponse = { data: { topic_view_posts: { id: 1 } } }
+    })
+
+    it('should return false if an error occurs', async () => {
+      axios.post.mockRejectedValue()
       const response = await wrapper.vm.createTopicPost({ id: 1 })
 
-      expect(axios.post).toBeCalled()
-      expect(response).toBeTruthy()
-    })
-
-    it('should create a post within a topic, if the topic exists', async () => {
-      axios.post.mockResolvedValue({ status: 200, postData })
-      wrapper = await shallowMount(Posts, { store })
-
-      const text = wrapper.find('textarea')
-      await text.setValue('testing comment')
-      await wrapper.setData({ topicResponse })
-
-      const response = await wrapper.vm.createTopicPost()
-
-      expect(axios.post).toBeCalled()
-      expect(response).toBeTruthy()
-    })
-
-    it('returns false if error occurs', async () => {
-      axios.post.mockRejectedValue({ status: 404 })
-      wrapper = await shallowMount(Posts, { store })
-
-      const text = wrapper.find('textarea')
-      await text.setValue('testing comment')
-      await wrapper.setData({ topicResponse })
-
-      const response = await wrapper.vm.createTopicPost()
-
+      expect(axios.post).toBeCalledTimes(1)
       expect(response).toBeFalsy()
+    })
+
+    it('should create a topic with a post if the topic does not exist', async () => {
+      axios.post.mockResolvedValue({})
+      wrapper.vm.topicResponse = null
+      const response = await wrapper.vm.createTopicPost({ id: 1 })
+
+      expect(axios.post).toBeCalledTimes(1)
+      expect(response).toBeTruthy()
+    })
+
+    it('should create a post within a topic if the topic exists', async () => {
+      axios.post.mockResolvedValue({})
+      const response = await wrapper.vm.createTopicPost({ id: 1 })
+
+      expect(axios.post).toBeCalledTimes(1)
+      expect(response).toBeTruthy()
     })
   })
 
