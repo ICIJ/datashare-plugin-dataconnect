@@ -1,29 +1,30 @@
 <template>
-  <div class="posts p-3">
-    <div class="posts__actions">
-      <div class="posts__actions__form-group">
+  <div class="comments p-3">
+    <div class="comments__actions">
+      <div class="comments__actions__form">
         <textarea
-            class="posts__actions__form-group-textarea form-control rounded-0"
+            class="comments__actions__form-textarea form-control rounded-0"
             v-model="commentText"
             placeholder="Type your comment here."
         ></textarea>
-        <button class="posts__actions__form-group__create btn btn-primary" @click="createComment()">
+        <button class="comments__actions__form__button btn btn-primary mt-2" @click="createComment()">
           Create
         </button>
       </div>
     </div>
-    <div v-for="comment in comments" :key="comment.id" class="posts__post">
-      <div class="posts__post__header row">
-        <div class="posts__post__header__delete p-2 col-2"></div>
-        <div class="posts__post__header__author col-5 font-weight-bold">
+    <div v-for="comment in comments" :key="comment.id" class="comments__comment mt-2 mb-4 p-1">
+      <div class="comments__comment__header row no-gutters">
+        <div class="comments__comment__header__author col-6 font-weight-bold">
           {{ comment.username }}
         </div>
-        <div class="posts__post__header__date col-5 text-right">
+        <div class="comments__comment__header__date col-6 text-right">
           {{ comment.created_at }}
         </div>
       </div>
-      <div class="posts__post__text" v-html="comment.cooked"></div>
-      <a :href="postUrl(comment)">Edit on I-Hub</a>
+      <div class="comments__comment__text" v-html="comment.cooked"></div>
+      <a :href="postUrl(comment)">
+        Edit on I-Hub
+      </a>
     </div>
   </div>
 </template>
@@ -131,3 +132,10 @@ export default {
   }
 }
 </script>
+<style lang="scss">
+  .comments {
+    &__comment {
+      border: 1px solid lightgray;
+    }
+  }
+</style>
