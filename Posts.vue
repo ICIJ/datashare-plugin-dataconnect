@@ -22,7 +22,7 @@
         </div>
       </div>
       <div class="comments__comment__text" v-html="comment.cooked"></div>
-      <a :href="postUrl(comment)">
+      <a :href="comment.full_url">
         Edit on I-Hub
       </a>
     </div>
@@ -49,13 +49,11 @@ export default {
     this.getComments()
   },
   methods: {
-    postUrl (comment) {
-      return comment.full_url
-    },
     async getComments () {
       let response = null
       try {
         response = await this.sendAction(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`, { method: 'GET' })
+        // response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
       } catch (_) {}
       if (!isNull(response)) {
         this.$set(this, 'topicId', get(response, 'data.topic_view_posts.id', null))
@@ -94,7 +92,8 @@ export default {
     async getCategory () {
       let category = null
       try {
-        const categories = await this.sendAction(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`, { method: 'GET' })
+        // const categories = await this.sendAction(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`, { method: 'GET' })
+        const categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
         const categoriesCreatedByDataconnect = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
         category = get(categoriesCreatedByDataconnect, '0', null)
       } catch(_) {}
@@ -130,12 +129,14 @@ export default {
       return !isNull(response)
     },
     async sendAction (url, config = {}) {
+      let response = null
       try {
-        const response = await axios.request({ url: url, ...config })
-        return response ? response : null
+        response = await axios.request({ url: url, ...config })
       } catch (_) {}
-      if (!isNull(response.errors)) {
+      if (!isNull(response.data.errors) || isNull(response)) {
         return null
+      } else {
+        return response
       }
     }
   }
