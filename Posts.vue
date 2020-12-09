@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import { filter, get, isNull } from 'lodash'
+import { filter, get, has, isNull } from 'lodash'
 import axios from 'axios'
 
 export default {
@@ -52,8 +52,7 @@ export default {
     async getComments () {
       let response = null
       try {
-        response = await this.sendAction(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`, { method: 'GET' })
-        // response = await axios.get(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
+        response = await this.sendAction(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
       } catch (_) {}
       if (!isNull(response)) {
         this.$set(this, 'topicId', get(response, 'data.topic_view_posts.id', null))
@@ -84,7 +83,7 @@ export default {
       }
       let category = null
       try {
-        const response = await this.sendAction(`${this.discourseHost}/${this.project}/categories.json`, { method: 'POST', data })
+        const response = await this.sendAction(`${this.discourseHost}/${this.project}/categories.json`, { method: 'post', data })
         category = get(response, 'data.category', null)
       } catch(_) {}
       return category
@@ -92,8 +91,7 @@ export default {
     async getCategory () {
       let category = null
       try {
-        // const categories = await this.sendAction(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`, { method: 'GET' })
-        const categories = await axios.get(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
+        const categories = await this.sendAction(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
         const categoriesCreatedByDataconnect = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
         category = get(categoriesCreatedByDataconnect, '0', null)
       } catch(_) {}
@@ -122,10 +120,7 @@ export default {
           datashare_document_id: this.documentId
         }
       }
-      let response = null
-      try {
-        response = await this.sendAction(`${this.discourseHost}/${this.project}/posts.json`, { method: 'POST', data })
-      } catch(_) {}
+      const response = await this.sendAction(`${this.discourseHost}/${this.project}/posts.json`, { method: 'post', data })
       return !isNull(response)
     },
     async sendAction (url, config = {}) {
@@ -133,7 +128,7 @@ export default {
       try {
         response = await axios.request({ url, ...config })
       } catch (_) {}
-      if (!isNull(response.data.errors) || isNull(response)) {
+      if (isNull(response) || has(response.data, 'errors')) {
         return null
       } else {
         return response
