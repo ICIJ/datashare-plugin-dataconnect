@@ -22,7 +22,7 @@
         </div>
       </div>
       <div class="comments__comment__text" v-html="comment.cooked"></div>
-      <a :href="comment.full_url">
+      <a :href="comment.full_url" target="_blank">
         Edit on I-Hub
       </a>
     </div>
