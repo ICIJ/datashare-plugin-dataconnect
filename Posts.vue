@@ -39,7 +39,6 @@ export default {
     return {
       comments: [],
       commentText: '',
-      discourseHost: 'http://localhost:8888/api/proxy',
       documentId: this.$store.state.document.idAndRouting.id,
       project: this.$store.state.search.index,
       topicId: null
@@ -50,7 +49,7 @@ export default {
   },
   methods: {
     async getComments () {
-      const response = await this.sendAction(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
+      const response = await this.sendAction(`custom-fields-api/topics/${this.documentId}.json`)
       if (!isNull(response)) {
         this.$set(this, 'topicId', get(response, 'data.topic_view_posts.id', null))
         this.$set(this, 'comments', get(response, 'data.topic_view_posts.post_stream.posts', []))
@@ -81,7 +80,7 @@ export default {
         },
         created_by_dataconnect: true
       }
-      const response = await this.sendAction(`${this.discourseHost}/${this.project}/categories.json`, { method: 'post', data })
+      const response = await this.sendAction('categories.json', { method: 'post', data })
       let category = null
       if (!isNull(response)) {
         category = get(response, 'data.category', null)
@@ -90,7 +89,7 @@ export default {
     },
     async getCategory () {
       let category = null
-      const response = await this.sendAction(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
+      const response = await this.sendAction(`g/${this.project}/categories.json`)
       if (!isNull(response)) {
         const categoriesCreatedByDataconnect = filter(get(response, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
         category = get(categoriesCreatedByDataconnect, '0', null)
@@ -120,12 +119,13 @@ export default {
           datashare_document_id: this.documentId
         }
       }
-      const response = await this.sendAction(`${this.discourseHost}/${this.project}/posts.json`, { method: 'post', data })
+      const response = await this.sendAction('posts.json', { method: 'post', data })
       return !isNull(response)
     },
     async sendAction (url, config = {}) {
       let response = null
       try {
+        url = `api/proxy/${this.project}/${url}`
         response = await axios.request({ url, ...config })
       } catch (_) {}
       if (isNull(response) || has(response.data, 'errors')) {
