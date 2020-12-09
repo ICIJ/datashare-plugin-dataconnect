@@ -50,7 +50,7 @@ export default {
   methods: {
     async getComments () {
       const response = await this.sendAction(`custom-fields-api/topics/${this.documentId}.json`)
-      if (!isNull(response)) {
+      if (response) {
         this.$set(this, 'topicId', get(response, 'data.topic_view_posts.id', null))
         this.$set(this, 'comments', get(response, 'data.topic_view_posts.post_stream.posts', []))
       } else {
@@ -62,9 +62,9 @@ export default {
     },
     async createComment () {
       const category = await this.getCategory()
-      if (!isNull(category)) {
+      if (category) {
         const topic = await this.createTopic(category)
-        if (!isNull(topic)) {
+        if (topic) {
           return this.getComments()
         }
       }
@@ -82,7 +82,7 @@ export default {
       }
       const response = await this.sendAction('categories.json', { method: 'post', data })
       let category = null
-      if (!isNull(response)) {
+      if (response) {
         category = get(response, 'data.category', null)
       }
       return category
@@ -90,7 +90,7 @@ export default {
     async getCategory () {
       let category = null
       const response = await this.sendAction(`g/${this.project}/categories.json`)
-      if (!isNull(response)) {
+      if (response) {
         const categoriesCreatedByDataconnect = filter(get(response, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
         category = get(categoriesCreatedByDataconnect, '0', null)
         // If category does not exist, create one
@@ -120,7 +120,7 @@ export default {
         }
       }
       const response = await this.sendAction('posts.json', { method: 'post', data })
-      return !isNull(response)
+      return response
     },
     async sendAction (url, config = {}) {
       let response = null
@@ -129,7 +129,7 @@ export default {
         response = await axios.request({ url, ...config })
       } catch (_) {}
       if (isNull(response) || has(response.data, 'errors')) {
-        return null
+        return false
       } else {
         return response
       }
