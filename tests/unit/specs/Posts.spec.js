@@ -80,12 +80,12 @@ describe('Posts.vue', () => {
     })
 
     it('should return an existing category', async () => {
-      const data = { lists: { category_list: { categories: [{ id: 5, created_by_dataconnect: true }] } } }
+      const data = { lists: { category_list: { categories: [{ id: 5, created_by_dataconnect: 'true' }] } } }
       axios.request.mockResolvedValue({ data })
       const category = await wrapper.vm.getCategory()
 
       expect(axios.request).toBeCalledTimes(1)
-      expect(category).toEqual({ id: 5, created_by_dataconnect: true })
+      expect(category).toEqual({ id: 5, created_by_dataconnect: 'true' })
     })
   })
 

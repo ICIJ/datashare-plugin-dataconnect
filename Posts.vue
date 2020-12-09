@@ -78,7 +78,7 @@ export default {
         permissions: {
           [this.project]: 1
         },
-        created_by_dataconnect: true
+        created_by_dataconnect: 'true'
       }
       const response = await this.sendAction('categories.json', { method: 'post', data })
       let category = null
