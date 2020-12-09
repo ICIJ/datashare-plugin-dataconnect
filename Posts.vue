@@ -81,11 +81,7 @@ export default {
         created_by_dataconnect: 'true'
       }
       const response = await this.sendAction('categories.json', { method: 'post', data })
-      let category = null
-      if (response) {
-        category = get(response, 'data.category', null)
-      }
-      return category
+      return response ? get(response, 'data.category', null) : null
     },
     async getCategory () {
       let category = null
@@ -119,8 +115,7 @@ export default {
           datashare_document_id: this.documentId
         }
       }
-      const response = await this.sendAction('posts.json', { method: 'post', data })
-      return response
+      return this.sendAction('posts.json', { method: 'post', data })
     },
     async sendAction (url, config = {}) {
       let response = null
@@ -128,11 +123,7 @@ export default {
         url = `api/proxy/${this.project}/${url}`
         response = await axios.request({ url, ...config })
       } catch (_) {}
-      if (isNull(response) || has(response.data, 'errors')) {
-        return false
-      } else {
-        return response
-      }
+      return (isNull(response) || has(response, 'data.errors')) ? false : response
     }
   }
 }
