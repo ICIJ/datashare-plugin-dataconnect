@@ -50,15 +50,15 @@ export default {
   },
   methods: {
     async getComments () {
-      let response = null
-      try {
-        response = await this.sendAction(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
-      } catch (_) {}
+      const response = await this.sendAction(`${this.discourseHost}/${this.project}/custom-fields-api/topics/${this.documentId}.json`)
       if (!isNull(response)) {
         this.$set(this, 'topicId', get(response, 'data.topic_view_posts.id', null))
         this.$set(this, 'comments', get(response, 'data.topic_view_posts.post_stream.posts', []))
-        this.$set(this, 'commentText', '')
+      } else {
+        this.$set(this, 'topicId', null)
+        this.$set(this, 'comments', [])
       }
+      this.$set(this, 'commentText', '')
       return this.comments
     },
     async createComment () {
@@ -81,23 +81,23 @@ export default {
         },
         created_by_dataconnect: true
       }
+      const response = await this.sendAction(`${this.discourseHost}/${this.project}/categories.json`, { method: 'post', data })
       let category = null
-      try {
-        const response = await this.sendAction(`${this.discourseHost}/${this.project}/categories.json`, { method: 'post', data })
+      if (!isNull(response)) {
         category = get(response, 'data.category', null)
-      } catch(_) {}
+      }
       return category
     },
     async getCategory () {
       let category = null
-      try {
-        const categories = await this.sendAction(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
-        const categoriesCreatedByDataconnect = filter(get(categories, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
+      const response = await this.sendAction(`${this.discourseHost}/${this.project}/g/${this.project}/categories.json`)
+      if (!isNull(response)) {
+        const categoriesCreatedByDataconnect = filter(get(response, 'data.lists.category_list.categories', []), 'created_by_dataconnect')
         category = get(categoriesCreatedByDataconnect, '0', null)
-      } catch(_) {}
-      // If category does not exist, create one
-      if (isNull(category)) {
-        category = await this.createCategory()
+        // If category does not exist, create one
+        if (isNull(category)) {
+          category = await this.createCategory()
+        }
       }
       return category
     },

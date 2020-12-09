@@ -51,18 +51,16 @@ describe('Posts.vue', () => {
   })
 
   describe('getCategory', () => {
-    it('should create a category if the search of a category return an error', async () => {
+    it('should not get either create a category if the search of a category returns an error', async () => {
       axios.request.mockRejectedValue()
-      const mockFunction = jest.fn().mockResolvedValue({ id: 1 })
-      wrapper.vm.createCategory = mockFunction
       const category = await wrapper.vm.getCategory()
 
       expect(axios.request).toBeCalledTimes(1)
-      expect(mockFunction).toBeCalledTimes(1)
-      expect(category).toEqual({ id: 1 })
+      expect(category).toBeNull()
     })
 
-    it('should create a category if the search of a category return null', async () => {
+    it('should create a category if the search of a category returns null', async () => {
+      axios.request.mockResolvedValue({})
       const mockFunction = jest.fn().mockResolvedValue({ id: 2 })
       wrapper.vm.createCategory = mockFunction
       const category = await wrapper.vm.getCategory()
