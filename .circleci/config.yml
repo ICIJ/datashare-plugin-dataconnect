@@ -38,11 +38,11 @@ jobs:
 #          name: Build
 #          command: yarn build
 
-#workflows:
-#  version: 2
-#  build_workflow:
-#    jobs:
-#      - install
+workflows:
+  version: 2
+  build_workflow:
+    jobs:
+      - install
 #      - test:
 #          requires:
 #            - install
@@ -52,4 +52,3 @@ jobs:
 #          filters:
 #            tags:
 #              only: /.*/
-
