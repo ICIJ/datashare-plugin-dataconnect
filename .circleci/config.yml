@@ -4,7 +4,7 @@ version: 2.1
 #  node: circleci/node@3.0.0
 
 jobs:
-  test:
+  build:
     docker:
       - image: circleci/node:10.15.2
     working_directory: ~/datashare-plugin-dataconnect
@@ -14,6 +14,7 @@ jobs:
           name: Restore Yarn Package Cache
           keys:
             - yarn-packages-{{ checksum "yarn.lock" }}
+            - yarn-packages- # used if checksum fails
       - run:
           name: Install Dependencies
           command: yarn install --immutable
@@ -24,6 +25,21 @@ jobs:
             - ~/.cache/yarn
       - run:
           name: Run tests
+          command: yarn test:unit
+
+  test:
+    docker:
+      - image: circleci/node:10.15.2
+    working_directory: ~/datashare-plugin-dataconnect
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-packages-{{ checksum "yarn.lock" }}
+            - yarn-packages- # used if checksum fails
+      - run:
+          name: Run unit test
           command: yarn test:unit
 
 #  build:
@@ -39,10 +55,10 @@ workflows:
   version: 2
   test:
     jobs:
-      - test
-#      - build:
-#          requires:
-#            - test
+      - build
+      - test:
+          requires:
+            - build
 #          filters:
 #            tags:
 #              only: /.*/
