@@ -20,15 +20,15 @@ jobs:
           paths:
             - ~/.cache/yarn
 
-#  test:
-#    docker:
-#      - image: circleci/node:10.15.2
-#    working_directory: ~/datashare-plugin-dataconnect
-#    steps:
-#      - run:
-#          name: Run tests
-#          command: yarn test:unit
-#
+  test:
+    docker:
+      - image: circleci/node:10.15.2
+    working_directory: ~/datashare-plugin-dataconnect
+    steps:
+      - run:
+          name: Run tests
+          command: yarn test:unit
+
 #  build:
 #    docker:
 #      - image: circleci/node:10.15.2
@@ -43,9 +43,9 @@ workflows:
   build_workflow:
     jobs:
       - install
-#      - test:
-#          requires:
-#            - install
+      - test:
+          requires:
+            - install
 #      - build:
 #          requires:
 #            - test
