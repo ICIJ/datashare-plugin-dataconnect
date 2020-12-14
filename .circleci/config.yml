@@ -18,14 +18,6 @@ jobs:
           paths:
             - ~/.cache/yarn
 
-  build:
-    docker:
-      - image: circleci/node:10.15.2
-    steps:
-      - run:
-          name: Build
-          command: yarn build
-
   test:
     docker:
       - image: circleci/node:10.15.2
@@ -34,20 +26,26 @@ jobs:
           name: Run tests
           command: yarn test:unit
 
+  build:
+    docker:
+      - image: circleci/node:10.15.2
+    steps:
+      - run:
+          name: Build
+          command: yarn build
+
 workflows:
   version: 2
   build_workflow:
     jobs:
-      - install:
-          filters:
-            tags:
-              only: /.*/
-      - build:
-          requires:
-            - install
-          filters:
-            tags:
-              only: /.*/
+      - install
       - test:
           requires:
-            - build
+            - install
+      - build:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /.*/
+
