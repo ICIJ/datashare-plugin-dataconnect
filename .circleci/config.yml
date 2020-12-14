@@ -20,14 +20,14 @@ jobs:
           command: yarn install --immutable
       - save_cache:
           name: Save Yarn Package Cache
-          key: yarn-packages-{{ checksum "yarn.lock" }}
           paths:
             - ~/.cache/yarn
+          key: yarn-packages-{{ checksum "yarn.lock" }}
       - run:
           name: Run tests
           command: yarn test:unit
 
-  test:
+  release:
     docker:
       - image: circleci/node:10.15.2
     working_directory: ~/datashare-plugin-dataconnect
@@ -39,26 +39,41 @@ jobs:
             - yarn-packages-{{ checksum "yarn.lock" }}
             - yarn-packages- # used if checksum fails
       - run:
-          name: Run unit test
-          command: yarn test:unit
-
-#  build:
-#    docker:
-#      - image: circleci/node:10.15.2
-#    working_directory: ~/datashare-plugin-dataconnect
-#    steps:
-#      - run:
-#          name: Build
-#          command: yarn build
+          name: Install Dependencies
+          command: yarn install --immutable
+      - save_cache:
+          name: Save Yarn Package Cache
+          paths:
+            - ~/.cache/yarn
+          key: yarn-packages-{{ checksum "yarn.lock" }}
+      - run:
+          name: Make distribution
+          command: yarn build
+      - save_cache:
+          name: Save distribution
+          paths:
+            - ~/dist
+          key: yarn-packages-{{ checksum "yarn.lock" }}
+      - run:
+          name: Release on Github
+          command: |
+            cd ~/datashare-plugin-dataconnect/dist
+            tar czf ../datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz .
+            zip -r ../datashare-plugin-dataconnect-${CIRCLE_TAG}.zip .
+            upload_url=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -d "{\"tag_name\":\"${CIRCLE_TAG}\", \"name\":\"${CIRCLE_TAG}\",\"body\":\"release ${CIRCLE_TAG}\"}" "https://api.github.com/repos/ICIJ/datashare-plugin-dataconnect/releases" | jq -r '.upload_url')
+            upload_url="${upload_url%\{*}"
+            echo "Uploading asset to release url: $upload_url"
+            curl -s -m 120 -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/zip" --data-binary "@/tmp/datashare/datashare-plugin-dataconnect-${CIRCLE_TAG}.zip" "$upload_url?name=datashare-plugin-dataconnect-${CIRCLE_TAG}.zip&label=datashare-plugin-dataconnect-${CIRCLE_TAG}.zip"
+            curl -s -m 120 -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/gzip" --data-binary "@/tmp/datashare/datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz" "$upload_url?name=datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz&label=datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz"
 
 workflows:
   version: 2
   test:
     jobs:
       - build
-      - test:
+      - release:
           requires:
             - build
-#          filters:
-#            tags:
-#              only: /.*/
+          filters:
+            tags:
+              only: /.*/
