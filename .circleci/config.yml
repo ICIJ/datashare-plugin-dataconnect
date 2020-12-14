@@ -6,6 +6,7 @@ jobs:
       - image: circleci/node:10.15.2
     working_directory: ~/datashare-client
     steps:
+      - checkout
       - restore_cache:
           name: Restore Yarn Package Cache
           keys:
