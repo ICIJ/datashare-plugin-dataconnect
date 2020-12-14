@@ -4,52 +4,52 @@ jobs:
   install:
     docker:
       - image: circleci/node:10.15.2
-    working_directory: ~/datashare-client
+    working_directory: ~/datashare-plugin-dataconnect
     steps:
       - checkout
-      - restore_cache:
-          name: Restore Yarn Package Cache
-          keys:
-            - yarn-packages-{{ checksum "yarn.lock" }}
-      - run:
-          name: Install Dependencies
-          command: yarn install --immutable
-      - save_cache:
-          name: Save Yarn Package Cache
-          key: yarn-packages-{{ checksum "yarn.lock" }}
-          paths:
-            - ~/.cache/yarn
+#      - restore_cache:
+#          name: Restore Yarn Package Cache
+#          keys:
+#            - yarn-packages-{{ checksum "yarn.lock" }}
+#      - run:
+#          name: Install Dependencies
+#          command: yarn install --immutable
+#      - save_cache:
+#          name: Save Yarn Package Cache
+#          key: yarn-packages-{{ checksum "yarn.lock" }}
+#          paths:
+#            - ~/.cache/yarn
 
-  test:
-    docker:
-      - image: circleci/node:10.15.2
-    working_directory: ~/datashare-client
-    steps:
-      - run:
-          name: Run tests
-          command: yarn test:unit
+#  test:
+#    docker:
+#      - image: circleci/node:10.15.2
+#    working_directory: ~/datashare-plugin-dataconnect
+#    steps:
+#      - run:
+#          name: Run tests
+#          command: yarn test:unit
+#
+#  build:
+#    docker:
+#      - image: circleci/node:10.15.2
+#    working_directory: ~/datashare-plugin-dataconnect
+#    steps:
+#      - run:
+#          name: Build
+#          command: yarn build
 
-  build:
-    docker:
-      - image: circleci/node:10.15.2
-    working_directory: ~/datashare-client
-    steps:
-      - run:
-          name: Build
-          command: yarn build
-
-workflows:
-  version: 2
-  build_workflow:
-    jobs:
-      - install
-      - test:
-          requires:
-            - install
-      - build:
-          requires:
-            - test
-          filters:
-            tags:
-              only: /.*/
+#workflows:
+#  version: 2
+#  build_workflow:
+#    jobs:
+#      - install
+#      - test:
+#          requires:
+#            - install
+#      - build:
+#          requires:
+#            - test
+#          filters:
+#            tags:
+#              only: /.*/
 
