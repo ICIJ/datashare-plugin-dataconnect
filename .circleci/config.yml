@@ -1,8 +1,5 @@
 version: 2.1
 
-#orbs:
-#  node: circleci/node@3.0.0
-
 jobs:
   build:
     docker:
@@ -55,12 +52,11 @@ jobs:
             cd ~/datashare-plugin-dataconnect/dist
             tar czf ../datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz .
             zip -r ../datashare-plugin-dataconnect-${CIRCLE_TAG}.zip .
-            echo "tag : $CIRCLE_TAG"
-            upload_url=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -d "{\"tag_name\":\"${CIRCLE_TAG}\", \"name\":\"${CIRCLE_TAG}\",\"body\":\"release ${CIRCLE_TAG}\"}" "https://api.github.com/repos/ICIJ/datashare-plugin-dataconnect/releases" | jq -r '.upload_url')
+            upload_url=$(curl -X POST -s -H "Accept: application/vnd.github.v3+json" -H "Authorization: token $GITHUB_TOKEN" -d "{\"tag_name\":\"${CIRCLE_TAG}\", \"name\":\"${CIRCLE_TAG}\",\"body\":\"release ${CIRCLE_TAG}\"}" "https://api.github.com/repos/ICIJ/datashare-plugin-dataconnect/releases" | jq -r '.upload_url')
             upload_url="${upload_url%\{*}"
             echo "Uploading asset to release url: $upload_url"
-            curl -s -m 120 -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/zip" --data-binary "@/tmp/datashare/datashare-plugin-dataconnect-${CIRCLE_TAG}.zip" "$upload_url?name=datashare-plugin-dataconnect-${CIRCLE_TAG}.zip&label=datashare-plugin-dataconnect-${CIRCLE_TAG}.zip"
-            curl -s -m 120 -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/gzip" --data-binary "@/tmp/datashare/datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz" "$upload_url?name=datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz&label=datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz"
+            curl -X POST -s -m 120 -H "Accept: application/vnd.github.v3+json" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/zip" --data-binary "@/tmp/datashare/datashare-plugin-dataconnect-${CIRCLE_TAG}.zip" "$upload_url?name=datashare-plugin-dataconnect-${CIRCLE_TAG}.zip&label=datashare-plugin-dataconnect-${CIRCLE_TAG}.zip"
+            curl -X POST -s -m 120 -H "Accept: application/vnd.github.v3+json" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/gzip" --data-binary "@/tmp/datashare/datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz" "$upload_url?name=datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz&label=datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz"
 
 workflows:
   version: 2
