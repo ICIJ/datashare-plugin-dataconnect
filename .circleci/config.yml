@@ -52,8 +52,8 @@ jobs:
             echo "Uploading asset to release url: $upload_url"
             zip_content_length=$(stat -c%s "datashare-plugin-dataconnect-${CIRCLE_TAG}.zip")
             tar_content_length=$(stat -c%s "datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz")
-            curl -X POST -m 120 -H "Accept: application/vnd.github.v3+json" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/zip" -H "Content-Length: $zip_content_length" --data-binary "@datashare-plugin-dataconnect-${CIRCLE_TAG}.zip" "$upload_url?name=datashare-plugin-dataconnect-${CIRCLE_TAG}.zip&label=datashare-plugin-dataconnect-${CIRCLE_TAG}.zip"
-            curl -X POST -m 120 -H "Accept: application/vnd.github.v3+json" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/gzip" -H "Content-Length: $tar_content_length" --data-binary "@datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz" "$upload_url?name=datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz&label=datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz"
+            curl -X POST -s -m 120 -H "Accept: application/vnd.github.v3+json" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/zip" -H "Content-Length: $zip_content_length" --data-binary "@datashare-plugin-dataconnect-${CIRCLE_TAG}.zip" "$upload_url?name=datashare-plugin-dataconnect-${CIRCLE_TAG}.zip&label=datashare-plugin-dataconnect-${CIRCLE_TAG}.zip"
+            curl -X POST -s -m 120 -H "Accept: application/vnd.github.v3+json" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/gzip" -H "Content-Length: $tar_content_length" --data-binary "@datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz" "$upload_url?name=datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz&label=datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz"
 
 workflows:
   version: 2
