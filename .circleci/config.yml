@@ -45,8 +45,11 @@ jobs:
           name: Release on Github
           command: |
             cd ~/datashare-plugin-dataconnect
-            tar czf datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz package.json dist
-            zip -r datashare-plugin-dataconnect-${CIRCLE_TAG}.zip package.json dist
+            mkdir datashare-plugin-dataconnect-${CIRCLE_TAG}
+            cp package.json datashare-plugin-dataconnect-${CIRCLE_TAG}
+            cp -R dist datashare-plugin-dataconnect-${CIRCLE_TAG}
+            tar czf datashare-plugin-dataconnect-${CIRCLE_TAG}.tgz datashare-plugin-dataconnect-${CIRCLE_TAG}
+            zip -r datashare-plugin-dataconnect-${CIRCLE_TAG}.zip datashare-plugin-dataconnect-${CIRCLE_TAG}
             upload_url=$(curl -X POST -s -H "Accept: application/vnd.github.v3+json" -H "Authorization: token $GITHUB_TOKEN" -d "{\"tag_name\":\"${CIRCLE_TAG}\", \"name\":\"${CIRCLE_TAG}\",\"body\":\"release ${CIRCLE_TAG}\"}" "https://api.github.com/repos/ICIJ/datashare-plugin-dataconnect/releases" | jq -r '.upload_url')
             upload_url="${upload_url%\{*}"
             echo "Uploading asset to release url: $upload_url"
