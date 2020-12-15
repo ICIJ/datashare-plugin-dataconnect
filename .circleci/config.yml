@@ -1,10 +1,14 @@
 version: 2.1
 
-jobs:
-  build:
+executors:
+  global-executor:
     docker:
       - image: circleci/node:10.15.2
     working_directory: ~/datashare-plugin-dataconnect
+
+jobs:
+  build:
+    executor: global-executor
     steps:
       - checkout
       - restore_cache:
@@ -25,9 +29,7 @@ jobs:
           command: yarn test:unit
 
   release:
-    docker:
-      - image: circleci/node:10.15.2
-    working_directory: ~/datashare-plugin-dataconnect
+    executor: global-executor
     steps:
       - checkout
       - restore_cache:
