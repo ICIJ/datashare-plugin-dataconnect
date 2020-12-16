@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import { filter, get, has, isNull } from 'lodash'
+import { filter, get, has, isNull, last } from 'lodash'
 import axios from 'axios'
 
 export default {
@@ -40,6 +40,7 @@ export default {
       comments: [],
       commentText: '',
       documentId: this.$store.state.document.idAndRouting.id,
+      documentName: last(this.$store.state.document.doc.slicedName),
       project: this.$store.state.search.index,
       topicId: null
     }
@@ -111,7 +112,7 @@ export default {
       } else {
         data = {
           ...data,
-          title: `Datashare document ${this.documentId.substring(0, 7)}`,
+          title: `${this.documentName} - #${this.documentId.substring(0, 7)}`,
           category: category.id,
           archetype: 'regular',
           datashare_document_id: this.documentId
