@@ -9,7 +9,7 @@ Vue.use(Vuex)
 jest.mock('axios')
 
 describe('Posts.vue', () => {
-  const state = { document: { idAndRouting: { id: '1' } }, search: { index: 'test-datashare' } }
+  const state = { document: { doc: { slicedName: 'test.pdf' }, idAndRouting: { id: '1' } }, search: { index: 'test-datashare' } }
   const store = new Vuex.Store({ state })
   let wrapper = null
 
