@@ -4,17 +4,17 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
     // We register a post-pipeline function for the `document-view-tabs` category
     core.registerPipeline({
       name: 'document-view-tabs',
-      category: 'document-view-tabs:post',
+      category: 'document-view-tabs',
       // The function that is applied to the tabs list
       type (tabs, document) {
-        tabs.push({
+        const tab = {
           name: 'comments-tab',
           label: 'Comments',
           icon: 'align-left',
           props: { document },
           component: Posts
-        })
-        return tabs
+        }
+        return [...tabs, tab]
       }
     })
   }, true)
