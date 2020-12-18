@@ -34,7 +34,7 @@ import { filter, get, has, isNull, last } from 'lodash'
 import axios from 'axios'
 
 export default {
-  name: 'Posts',
+  name: 'Comments',
   data() {
     return {
       comments: [],

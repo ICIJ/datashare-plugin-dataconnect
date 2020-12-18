@@ -3,18 +3,18 @@ import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import Posts from '../../../Posts.vue'
+import Comments from '../../../Comments.vue'
 
 Vue.use(Vuex)
 jest.mock('axios')
 
-describe('Posts.vue', () => {
+describe('Comments.vue', () => {
   const state = { document: { doc: { slicedName: 'test.pdf' }, idAndRouting: { id: '1' } }, search: { index: 'test-datashare' } }
   const store = new Vuex.Store({ state })
   let wrapper = null
 
   beforeEach(async () => {
-    wrapper = await shallowMount(Posts, { store })
+    wrapper = await shallowMount(Comments, { store })
     axios.request.mockClear()
   })
 
