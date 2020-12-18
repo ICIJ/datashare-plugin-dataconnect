@@ -126,7 +126,7 @@ export default {
         url = `api/proxy/${this.project}/${url}`
         response = await axios.request({ url, ...config })
       } catch (error) {
-        console.log(error)
+        // console.log(error)
       }
       return (isNull(response) || has(response, 'data.errors')) ? false : response
     }
