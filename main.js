@@ -1,5 +1,5 @@
-import Comments from './Comments'
-import CommentsTabLabel from './CommentsTabLabel'
+import Comments from './components/Comments'
+import CommentsTabLabel from './components/CommentsTabLabel'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   // We register a post-pipeline function for the `document-view-tabs` category

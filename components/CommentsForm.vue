@@ -46,10 +46,9 @@ export default {
       if (category) {
         const topic = await this.createTopic(category)
         if (topic) {
-          return this.getComments()
+          this.$emit('created')
         }
       }
-      return false
     },
     async createCategory () {
       const data = {

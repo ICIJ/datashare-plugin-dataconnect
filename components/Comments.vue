@@ -1,33 +1,21 @@
 <template>
   <div class="comments p-3">
-    <comments-form></comments-form>
-
-    <div v-for="comment in comments" :key="comment.id" class="comments__comment mt-2 mb-4 p-1">
-      <div class="comments__comment__header row no-gutters">
-        <div class="comments__comment__header__author col-6 font-weight-bold">
-          {{ comment.username }}
-        </div>
-        <div class="comments__comment__header__date col-6 text-right">
-          {{ comment.created_at }}
-        </div>
-      </div>
-      <div class="comments__comment__text" v-html="comment.cooked"></div>
-      <a :href="comment.full_url" target="_blank">
-        Edit on I-Hub
-      </a>
-    </div>
+    <comments-form @created="getComments"/>
+    <comments-list :comments="comments"/>
   </div>
 </template>
 
 <script>
 import { get, has, isNull } from 'lodash'
 import axios from 'axios'
-import CommentsForm from './components/CommentsForm'
+import CommentsForm from './CommentsForm'
+import CommentsList from './CommentsList'
 
 export default {
   name: 'Comments',
   components: {
-    CommentsForm
+    CommentsForm,
+    CommentsList
   },
   data() {
     return {
@@ -64,9 +52,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .comments {
-    &__comment {
-      border: 1px solid lightgray;
-    }
-  }
 </style>
