@@ -3,50 +3,28 @@ import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import Comments from '../../../Comments.vue'
+import CommentsForm from '../../../../components/CommentsForm.vue'
 
 Vue.use(Vuex)
 jest.mock('axios')
 
-describe('Comments.vue', () => {
+describe('CommentsForm.vue', () => {
   const state = { document: { doc: { slicedName: 'test.pdf' }, idAndRouting: { id: '1' } }, search: { index: 'test-datashare' } }
   const store = new Vuex.Store({ state })
   let wrapper = null
 
   beforeEach(async () => {
-    wrapper = await shallowMount(Comments, { store })
+    wrapper = await shallowMount(CommentsForm, { store })
     axios.request.mockClear()
   })
 
   afterAll(() => jest.unmock('axios'))
 
   describe('getComments', () => {
-    it('should return empty array if an error occurs', async () => {
-      axios.request.mockRejectedValue()
-      await wrapper.vm.getComments()
-
-      expect(axios.request).toBeCalledTimes(1)
-      expect(wrapper.vm.comments).toHaveLength(0)
-      expect(wrapper.vm.comments).toEqual([])
+    it('should return null if no topics', async () => {
     })
 
-    it('should return empty array if no topics', async () => {
-      wrapper.vm.comments = [{ id: 1 }]
-      axios.request.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
-      await wrapper.vm.getComments()
-
-      expect(axios.request).toBeCalledTimes(1)
-      expect(wrapper.vm.comments).toHaveLength(0)
-      expect(wrapper.vm.comments).toEqual([])
-    })
-
-    it('should retrieve topics if any', async () => {
-      axios.request.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [{ id: 1 }, { id: 2 }] } } } })
-      await wrapper.vm.getComments()
-
-      expect(axios.request).toBeCalledTimes(1)
-      expect(wrapper.vm.comments).toHaveLength(2)
-      expect(wrapper.vm.comments).toEqual([{ id: 1 }, { id: 2 }])
+    it('should set topicId if topic exists', async () => {
     })
   })
 
@@ -159,10 +137,10 @@ describe('Comments.vue', () => {
       wrapper.vm.getCategory = jest.fn().mockReturnValue({ id: 1 })
       wrapper.vm.createTopic = jest.fn().mockReturnValue({ id: 1 })
       axios.request.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
+
       const response = await wrapper.vm.createComment()
 
-      expect(axios.request).toBeCalled()
-      expect(response).toBeTruthy()
+      expect(wrapper.emitted().created).toBeTruthy()
     })
 
     it('should create a comment if category exists but topic does not', async () => {
@@ -170,8 +148,8 @@ describe('Comments.vue', () => {
       axios.request.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
       const response = await wrapper.vm.createComment()
 
-      expect(axios.request).toBeCalledTimes(2)
-      expect(response).toBeTruthy()
+      expect(axios.request).toBeCalledTimes(1)
+      expect(wrapper.emitted().created).toBeTruthy()
     })
   })
 })
