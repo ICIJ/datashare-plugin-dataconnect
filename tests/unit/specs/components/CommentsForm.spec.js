@@ -20,11 +20,21 @@ describe('CommentsForm.vue', () => {
 
   afterAll(() => jest.unmock('axios'))
 
-  describe('getComments', () => {
-    it('should return null if no topics', async () => {
+  describe('setTopic', () => {
+    it('should set the topicId, if the topic exists', async () => {
+      axios.request.mockResolvedValue({ data: { topic_view_posts: { id: 1 } } })
+
+      await wrapper.vm.setTopic()
+      expect(axios.request).toBeCalledTimes(1)
+      expect(wrapper.vm.topicId).toEqual(1)
     })
 
-    it('should set topicId if topic exists', async () => {
+    it('should keep topicId null, if topic does not exist', async () => {
+      axios.request.mockResolvedValue(null)
+
+      await wrapper.vm.setTopic()
+      expect(axios.request).toBeCalledTimes(1)
+      expect(wrapper.vm.topicId).toBeNull()
     })
   })
 
