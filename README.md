@@ -8,7 +8,7 @@ To be used with [datashare-extension-dataconnect](https://github.com/ICIJ/datash
 
 First, ensure that your local environment is up to date:
 
-`git pull origin main`
+`git pull origin main --tags`
 
 Then create a tag of the release:
 
