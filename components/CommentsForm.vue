@@ -46,6 +46,7 @@ export default {
       if (category) {
         const topic = await this.createTopic(category)
         if (topic) {
+          this.$root.$emit('update-tab-label:count')
           this.$emit('created')
         }
       }
