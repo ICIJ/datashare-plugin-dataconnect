@@ -52,12 +52,13 @@ export default {
       }
     },
     async createCategory () {
+      const project = this.project.charAt(0).toLowerCase() + this.project.slice(1)
       const data = {
         name: `Datashare Documents for ${this.project}`,
         color: 'BF1E2E',
         text_color: 'FFFFFF',
         permissions: {
-          [this.project]: 1
+          [project]: 1
         },
         custom_fields: {
           created_by_dataconnect: 'true'
