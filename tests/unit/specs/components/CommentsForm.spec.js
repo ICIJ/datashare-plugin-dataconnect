@@ -1,30 +1,29 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, createLocalVue } from '@vue/test-utils'
 import axios from 'axios'
 import BootstrapVue from 'bootstrap-vue'
 import Vue from 'vue'
+import VueWait from 'vue-wait'
 import Vuex from 'vuex'
 
 import CommentsForm from '../../../../components/CommentsForm.vue'
 
-Vue.use(BootstrapVue)
-Vue.use(Vuex)
+const localVue = createLocalVue()
+
+localVue.use(BootstrapVue)
+localVue.use(VueWait)
+localVue.use(Vuex)
+
 jest.mock('axios')
 
 describe('CommentsForm.vue', () => {
   const state = { document: { doc: { slicedName: 'test.pdf' }, idAndRouting: { id: '1' } }, search: { index: 'test-datashare' } }
   const store = new Vuex.Store({ state })
-  const mocks = {
-    $wait: {
-      start: () => (null),
-      end: () => (null),
-      is: () => false
-    }
-  }
+  const wait = new VueWait()
 
   let wrapper = null
 
   beforeEach(async () => {
-    wrapper = await shallowMount(CommentsForm, { store, mocks })
+    wrapper = await shallowMount(CommentsForm, { localVue, store, wait })
     axios.request.mockClear()
   })
 
