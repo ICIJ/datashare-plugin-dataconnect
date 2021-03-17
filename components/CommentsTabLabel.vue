@@ -3,7 +3,7 @@
     <span class="comments-tab-label__label">
       Comments
     </span>
-    <span class="comments-tab-label__count badge badge-secondary" v-html="count"></span>
+    <sup class="comments-tab-label__count badge badge-secondary" v-html="count"></sup>
   </span>
 </template>
 
