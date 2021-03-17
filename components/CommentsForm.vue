@@ -1,16 +1,23 @@
 <template>
-  <div class="comments-form">
-    <div class="comments-form__form">
-      <textarea
-          class="comments-form__form__form-textarea form-control rounded-0"
-          v-model="commentText"
-          placeholder="Type your comment here."
-      ></textarea>
-      <button class="comments-form__form__button btn btn-primary mt-2" @click="createComment()">
-        Post
-      </button>
-    </div>
-  </div>
+  <form class="comments-form" @submit.prevent="createCommentWithLoading()">
+    <fieldset class="comments-form__fieldset" :disabled="$wait.is('creatingComment')">
+      <b-overlay :show="$wait.is('creatingComment')" opacity="0">
+          <textarea
+              class="comments-form__fieldset__fieldset-textarea form-control rounded-0"
+              v-model="commentText"
+              required
+              placeholder="Type your comment here."></textarea>
+      </b-overlay>
+      <div class="d-flex align-items-center">
+        <p class="text-muted m-0">
+          Your comment with also be visible on the iHub.
+        </p>
+        <button class="comments-form__fieldset__button btn btn-primary mt-2 ml-auto" type="submit">
+          Post
+        </button>
+      </div>
+    </fieldset>
+  </form>
 </template>
 
 <script>
@@ -41,11 +48,17 @@ export default {
       }
       this.$set(this, 'commentText', '')
     },
+    async createCommentWithLoading () {
+      this.$wait.start('creatingComment')
+      await this.createComment()
+      this.$wait.end('creatingComment')
+    },
     async createComment () {
       const category = await this.getCategory()
       if (category) {
         const topic = await this.createTopic(category)
         if (topic) {
+          this.commentText = ''
           this.$root.$emit('update-tab-label:count')
           this.$emit('created')
         }
@@ -101,13 +114,13 @@ export default {
       return this.sendAction('posts.json', { method: 'post', data })
     },
     async sendAction (url, config = {}) {
-      let response = null
       try {
         url = `api/proxy/${this.project}/${url}`
-        response = await axios.request({ url, ...config })
+        const response = await axios.request({ url, ...config })
+        return has(response, 'data.errors') ? false : response
       } catch (error) {
+        return false
       }
-      return (isNull(response) || has(response, 'data.errors')) ? false : response
     }
   }
 }

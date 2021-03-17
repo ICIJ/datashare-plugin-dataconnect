@@ -1,20 +1,30 @@
 import { shallowMount } from '@vue/test-utils'
 import axios from 'axios'
+import BootstrapVue from 'bootstrap-vue'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
 import CommentsForm from '../../../../components/CommentsForm.vue'
 
+Vue.use(BootstrapVue)
 Vue.use(Vuex)
 jest.mock('axios')
 
 describe('CommentsForm.vue', () => {
   const state = { document: { doc: { slicedName: 'test.pdf' }, idAndRouting: { id: '1' } }, search: { index: 'test-datashare' } }
   const store = new Vuex.Store({ state })
+  const mocks = {
+    $wait: {
+      start: () => (null),
+      end: () => (null),
+      is: () => false
+    }
+  }
+
   let wrapper = null
 
   beforeEach(async () => {
-    wrapper = await shallowMount(CommentsForm, { store })
+    wrapper = await shallowMount(CommentsForm, { store, mocks })
     axios.request.mockClear()
   })
 
@@ -128,11 +138,12 @@ describe('CommentsForm.vue', () => {
   })
 
   describe('createComment', () => {
-    it('should call "createComment" on click', () => {
-      wrapper.vm.createComment = jest.fn()
-      wrapper.find('button').trigger('click')
+    it('should call "createCommentWithLoading" on submit', () => {
+      wrapper.vm.commentText = 'Foo bar.'
+      wrapper.vm.createCommentWithLoading = jest.fn()
+      wrapper.find('.comments-form').trigger('submit')
 
-      expect(wrapper.vm.createComment).toBeCalled()
+      expect(wrapper.vm.createCommentWithLoading).toBeCalled()
     })
 
     it('should return false if category does not exist', async () => {

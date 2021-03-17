@@ -1,12 +1,12 @@
 <template>
-  <div class="comments p-3">
-    <comments-form @created="getComments"></comments-form>
-    <comments-list :comments="comments"></comments-list>
+  <div class="comments">
+    <comments-list class="comments__list" :comments="comments"></comments-list>
+    <comments-form class="comments__form" @created="onCreate"></comments-form>
   </div>
 </template>
 
 <script>
-import { get, has, isNull } from 'lodash'
+import { get, has } from 'lodash'
 import axios from 'axios'
 
 import CommentsForm from './CommentsForm'
@@ -29,6 +29,22 @@ export default {
     this.getComments()
   },
   methods: {
+    async onCreate () {
+      await this.getComments()
+      await this.scrollToLastComment()
+    },
+    async scrollToLastComment () {
+      // Element must be mounted
+      await this.$nextTick()
+      // Use the last comment
+      let comment = this.$el.querySelector('.comments-list__comment:last-of-type')
+      // Get the offset from the navbar height (which is sticky)
+      const offset = -parseInt(this.$root.$el.style.getPropertyValue('--search-document-navbar-height'))
+      // Use the scroll-tracker component
+      const $container = this.$el.closest('.overflow-auto')
+      // eslint-disable-next-line vue/custom-event-name-casing
+      this.$root.$emit('scroll-tracker:request', comment, offset, $container)
+    },
     async getComments () {
       const response = await this.sendAction(`custom-fields-api/topics/${this.documentId}.json`)
       if (response) {
@@ -39,14 +55,35 @@ export default {
       return this.comments
     },
     async sendAction (url, config = {}) {
-      let response = null
       try {
         url = `api/proxy/${this.project}/${url}`
-        response = await axios.request({ url, ...config })
+        const response = await axios.request({ url, ...config })
+        return has(response, 'data.errors') ? false : response
       } catch (error) {
+        return false
       }
-      return (isNull(response) || has(response, 'data.errors')) ? false : response
     }
   }
 }
 </script>
+
+<style lang="scss" scoped>
+  .comments {
+
+    &__list {
+      padding: 1rem 1rem 0;
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    &__form {
+      padding: 1rem;
+      background: var(--lighter);
+      position: sticky;
+      bottom:0;
+      left: 0;
+    }
+  }
+</style>
