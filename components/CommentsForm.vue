@@ -7,7 +7,7 @@
           placeholder="Type your comment here."
       ></textarea>
       <button class="comments-form__form__button btn btn-primary mt-2" @click="createComment()">
-        Publish
+        Post
       </button>
     </div>
   </div>
