@@ -1,7 +1,12 @@
 <template>
   <div class="comments">
-    <comments-list class="comments__list" :comments="comments"></comments-list>
-    <comments-form class="comments__form" @created="onCreate"></comments-form>
+    <v-wait for="gettingComments">
+      <template slot="waiting">
+        <b-spinner label="Loading the comments..." class="my-5 mx-auto d-block" />
+      </template>
+      <comments-list class="comments__list" :comments="comments"></comments-list>
+      <comments-form class="comments__form" @created="onCreateComment"></comments-form>
+    </v-wait>
   </div>
 </template>
 
@@ -26,13 +31,13 @@ export default {
     }
   },
   mounted () {
-    this.getComments()
+    this.getCommentsWithLoading()
   },
   methods: {
-    async onCreate () {
+    async onCreateComment () {
       await this.getComments()
       await this.scrollToLastComment()
-    },
+     },
     async scrollToLastComment () {
       // Element must be mounted
       await this.$nextTick()
@@ -44,6 +49,11 @@ export default {
       const $container = this.$el.closest('.overflow-auto')
       // eslint-disable-next-line vue/custom-event-name-casing
       this.$root.$emit('scroll-tracker:request', comment, offset, $container)
+    },
+    async getCommentsWithLoading () {
+      this.$wait.start('gettingComments')
+      await this.getComments()
+      this.$wait.end('gettingComments')
     },
     async getComments () {
       const response = await this.sendAction(`custom-fields-api/topics/${this.documentId}.json`)
