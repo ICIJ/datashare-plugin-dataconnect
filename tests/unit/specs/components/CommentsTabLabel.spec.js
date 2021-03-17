@@ -1,11 +1,13 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, createLocalVue } from '@vue/test-utils'
 import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
 import CommentsTabLabel from '../../../../components/CommentsTabLabel.vue'
 
-Vue.use(Vuex)
+const localVue = createLocalVue()
+localVue.use(Vuex)
+
 jest.mock('axios')
 
 describe('CommentsTabLabel.vue', () => {
@@ -20,14 +22,14 @@ describe('CommentsTabLabel.vue', () => {
   afterAll(() => jest.unmock('axios'))
 
   it('shows the "Comments" label', () => {
-    const wrapper = shallowMount(CommentsTabLabel, { store })
+    const wrapper = shallowMount(CommentsTabLabel, { localVue, store })
     expect(wrapper.find('.comments-tab-label__label').text()).toBe("Comments")
   })
 
   it('show 0 comments in a badge', async () => {
     const data = { "posts_count": 0 }
     axios.request.mockResolvedValue({ data })
-    const wrapper = shallowMount(CommentsTabLabel, { store })
+    const wrapper = shallowMount(CommentsTabLabel, { localVue, store })
     await flushPromises()
     expect(wrapper.find('.comments-tab-label__count').text()).toBe("0")
   })
@@ -35,7 +37,7 @@ describe('CommentsTabLabel.vue', () => {
   it('show 10 comments in a badge', async () => {
     const data = { "posts_count": 10 }
     axios.request.mockResolvedValue({ data })
-    const wrapper = shallowMount(CommentsTabLabel, { store })
+    const wrapper = shallowMount(CommentsTabLabel, { localVue, store })
     await flushPromises()
     expect(wrapper.find('.comments-tab-label__count').text()).toBe("10")
   })

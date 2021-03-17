@@ -1,10 +1,11 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, createLocalVue } from '@vue/test-utils'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
 import CommentsList from '../../../../components/CommentsList.vue'
 
-Vue.use(Vuex)
+const localVue = createLocalVue()
+localVue.use(Vuex)
 
 describe('CommentsList.vue', () => {
   const comments = [
@@ -41,24 +42,24 @@ describe('CommentsList.vue', () => {
   }
 
   it('accesses comments through props', () => {
-    const wrapper = shallowMount(CommentsList, { propsData: { comments }, mocks })
+    const wrapper = shallowMount(CommentsList, { localVue, propsData: { comments }, mocks })
     expect(wrapper.props().comments).toBe(comments)
   })
 
   it('shows 3 comments', () => {
-    const wrapper = shallowMount(CommentsList, { propsData: { comments }, mocks })
+    const wrapper = shallowMount(CommentsList, { localVue, propsData: { comments }, mocks })
     expect(wrapper.find('.comments-list__comment ').exists()).toBeTruthy()
     expect(wrapper.findAll('.comments-list__comment ').length).toBe(comments.length)
   })
 
   it('shows 0 comments', () => {
-    const wrapper = shallowMount(CommentsList, { propsData: { comments: [] }, mocks })
+    const wrapper = shallowMount(CommentsList, { localVue, propsData: { comments: [] }, mocks })
     expect(wrapper.find('.comments-list__comment ').exists()).toBeFalsy()
     expect(wrapper.findAll('.comments-list__comment ').length).toBe(0)
   })
 
   it('format the relative links to go to the orign', () => {
-    const wrapper = shallowMount(CommentsList, { propsData: { comments }, mocks })
+    const wrapper = shallowMount(CommentsList, { localVue, propsData: { comments }, mocks })
     const html = wrapper.findAll('.comments-list__comment__text').at(2).html()
     expect(html).toContain('hello <a class="mention" target="_blank" href="https://testing.com/u/testuser2">@testuser2</a>')
   })
