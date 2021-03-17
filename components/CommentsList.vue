@@ -55,7 +55,9 @@ export default {
   methods: {
     cooked ({ cooked, full_url: fullUrl }) {
       const { origin } = new URL(fullUrl)
-      return cooked.split('href="/').join(`target="_blank" href="${origin}/`)
+      return cooked
+        .split('src="/').join(`src="${origin}/`)
+        .split('href="/').join(`target="_blank" href="${origin}/`)
     }
   }
 }
@@ -88,6 +90,12 @@ export default {
 
       &__text {
         max-width: 690px;
+
+        & >>> img.emoji {
+          width: 20px;
+          height: 20px;
+          vertical-align: middle;
+        }
       }
     }
 

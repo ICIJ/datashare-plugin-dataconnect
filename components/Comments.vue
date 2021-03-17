@@ -11,8 +11,8 @@
 </template>
 
 <script>
-import { get, has } from 'lodash'
 import axios from 'axios'
+import { get, has } from 'lodash'
 
 import CommentsForm from './CommentsForm'
 import CommentsList from './CommentsList'
