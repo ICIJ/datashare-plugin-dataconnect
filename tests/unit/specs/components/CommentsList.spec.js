@@ -23,6 +23,14 @@ describe('CommentsList.vue', () => {
       cooked: 'testing 2',
       full_url: 'https://testing.com/testing/2',
       avatar_template: '/avatar/{size}.png'
+    },
+    {
+      id: 3,
+      username: 'testuser1',
+      created_at: '23/12/2020',
+      cooked: 'hello <a class="mention" href="/u/testuser2">@testuser2</a>',
+      full_url: 'https://testing.com/testing/3',
+      avatar_template: '/avatar/{size}.png'
     }
   ]
 
@@ -37,7 +45,7 @@ describe('CommentsList.vue', () => {
     expect(wrapper.props().comments).toBe(comments)
   })
 
-  it('shows 2 comments', () => {
+  it('shows 3 comments', () => {
     const wrapper = shallowMount(CommentsList, { propsData: { comments }, mocks })
     expect(wrapper.find('.comments-list__comment ').exists()).toBeTruthy()
     expect(wrapper.findAll('.comments-list__comment ').length).toBe(comments.length)
@@ -47,5 +55,11 @@ describe('CommentsList.vue', () => {
     const wrapper = shallowMount(CommentsList, { propsData: { comments: [] }, mocks })
     expect(wrapper.find('.comments-list__comment ').exists()).toBeFalsy()
     expect(wrapper.findAll('.comments-list__comment ').length).toBe(0)
+  })
+
+  it('format the relative links to go to the orign', () => {
+    const wrapper = shallowMount(CommentsList, { propsData: { comments }, mocks })
+    const html = wrapper.findAll('.comments-list__comment__text').at(2).html()
+    expect(html).toContain('hello <a class="mention" target="_blank" href="https://testing.com/u/testuser2">@testuser2</a>')
   })
 })

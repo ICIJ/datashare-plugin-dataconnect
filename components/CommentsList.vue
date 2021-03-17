@@ -17,7 +17,7 @@
             </abbr>
           </div>
         </div>
-        <div class="comments-list__comment__text" v-html="comment.cooked"></div>
+        <div class="comments-list__comment__text" v-html="cooked(comment)"></div>
       </div>
     </div>
   </div>
@@ -51,6 +51,12 @@ export default {
       const { origin } = new URL(fullUrl)
       return `${origin}/u/${username}/`
     }
+  },
+  methods: {
+    cooked ({ cooked, full_url: fullUrl }) {
+      const { origin } = new URL(fullUrl)
+      return cooked.split('href="/').join(`target="_blank" href="${origin}/`)
+    }
   }
 }
 </script>
@@ -78,6 +84,10 @@ export default {
       &:not(:last-of-type) {
         margin-bottom: 1rem;
         border-bottom: 1px solid var(--light);
+      }
+
+      &__text {
+        max-width: 690px;
       }
     }
 
