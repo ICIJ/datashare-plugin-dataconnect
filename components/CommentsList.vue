@@ -22,11 +22,9 @@ export default {
   name: 'CommentsList',
   props: {
     comments: {
-      type: Array
+      type: Array,
+      default: () => ([])
     }
   }
 }
 </script>
-
-<style lang="scss" scoped>
-</style>

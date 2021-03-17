@@ -1,13 +1,14 @@
 <template>
   <div class="comments p-3">
-    <comments-form @created="getComments"/>
-    <comments-list :comments="comments"/>
+    <comments-form @created="getComments"></comments-form>
+    <comments-list :comments="comments"></comments-list>
   </div>
 </template>
 
 <script>
 import { get, has, isNull } from 'lodash'
 import axios from 'axios'
+
 import CommentsForm from './CommentsForm'
 import CommentsList from './CommentsList'
 
@@ -43,13 +44,9 @@ export default {
         url = `api/proxy/${this.project}/${url}`
         response = await axios.request({ url, ...config })
       } catch (error) {
-        // console.log(error)
       }
       return (isNull(response) || has(response, 'data.errors')) ? false : response
     }
   }
 }
 </script>
-
-<style lang="scss" scoped>
-</style>

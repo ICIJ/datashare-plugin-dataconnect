@@ -3,11 +3,12 @@
     <span class="comments-tab-label__label">
       Comments
     </span>
-    <span class="comments-tab-label__count badge badge-secondary" v-html="count" />
+    <span class="comments-tab-label__count badge badge-secondary" v-html="count"></span>
   </span>
 </template>
 
 <script>
+  import { get } from 'lodash'
   import axios from 'axios'
 
   export default {
@@ -18,11 +19,8 @@
       }
     },
     mounted () {
-      this.$root.$on("update-tab-label:count", () => {
-        return this.initCount()
-      })
-
-      return this.initCount()
+      this.$root.$on("update-tab-label:count", () => this.initCount())
+      this.initCount()
     },
     computed: {
       document () {
@@ -55,8 +53,7 @@
         const documentId = this.documentId
         const url = `/api/proxy/${project}/custom-fields-api/topics/${documentId}/posts_count.json`
         const response = await axios.request({ url, method: 'get' })
-        const { data: { posts_count: count } } = response
-        return count
+        return get(response, 'data.posts_count', 0)
       }
     }
   }
