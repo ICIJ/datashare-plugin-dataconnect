@@ -41,14 +41,9 @@ export default {
     async scrollToLastComment () {
       // Element must be mounted
       await this.$nextTick()
-      // Use the last comment
-      let comment = this.$el.querySelector('.comments-list__comment:last-of-type')
-      // Get the offset from the navbar height (which is sticky)
-      const offset = -parseInt(this.$root.$el.style.getPropertyValue('--search-document-navbar-height'))
-      // Use the scroll-tracker component
-      const $container = this.$el.closest('.overflow-auto')
-      // eslint-disable-next-line vue/custom-event-name-casing
-      this.$root.$emit('scroll-tracker:request', comment, offset, $container)
+      const container = this.$el.closest('.overflow-auto')
+      const top = container.scrollHeight
+      container.scroll({ top, left: 0, behavior: 'smooth' })
     },
     async getCommentsWithLoading () {
       this.$wait.start('gettingComments')
