@@ -31,22 +31,20 @@ export default {
       commentText: '',
       documentId: this.$store.state.document.idAndRouting.id,
       documentName: last(this.$store.state.document.doc.slicedName),
-      project: this.$store.state.search.index,
-      topicId: null
+      project: this.$store.state.search.index
     }
   },
   mounted () {
-    this.setTopic()
+    this.$set(this, 'commentText', '')
   },
   methods: {
     async setTopic () {
       const response = await this.sendAction(`custom-fields-api/topics/${this.documentId}.json`)
       if (response) {
-        this.$set(this, 'topicId', get(response, 'data.topic_view_posts.id', null))
+        return get(response, 'data.topic_view_posts.id', null)
       } else {
-        this.$set(this, 'topicId', null)
+        return null
       }
-      this.$set(this, 'commentText', '')
     },
     async createCommentWithLoading () {
       this.$wait.start('creatingComment')
@@ -97,10 +95,13 @@ export default {
         raw: this.commentText,
         skip_validations: true
       }
-      if (!isNull(this.topicId)) {
+
+      const topicId = await this.setTopic()
+
+      if (!isNull(topicId)) {
         data = {
           ...data,
-          topic_id: this.topicId
+          topic_id: topicId
         }
       } else {
         data = {
