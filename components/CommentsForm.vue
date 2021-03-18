@@ -31,7 +31,8 @@ export default {
       commentText: '',
       documentId: this.$store.state.document.idAndRouting.id,
       documentName: last(this.$store.state.document.doc.slicedName),
-      project: this.$store.state.search.index
+      project: this.$store.state.search.index,
+      topicId: null
     }
   },
   mounted () {
@@ -96,12 +97,15 @@ export default {
         skip_validations: true
       }
 
-      const topicId = await this.setTopic()
+      if (isNull(this.topicId)) {
+        const topicId = await this.setTopic()
+        this.$set(this, 'topicId', topicId)
+      }
 
-      if (!isNull(topicId)) {
+      if (!isNull(this.topicId)) {
         data = {
           ...data,
-          topic_id: topicId
+          topic_id: this.topicId
         }
       } else {
         data = {

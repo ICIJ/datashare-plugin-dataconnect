@@ -114,7 +114,7 @@ describe('CommentsForm.vue', () => {
       axios.request.mockRejectedValue()
       const response = await wrapper.vm.createTopic({ id: 1 })
 
-      expect(axios.request).toBeCalledTimes(2)
+      expect(axios.request).toBeCalledTimes(1)
       expect(response).toBeFalsy()
     })
 
@@ -131,7 +131,7 @@ describe('CommentsForm.vue', () => {
       axios.request.mockResolvedValue({})
       const response = await wrapper.vm.createTopic({ id: 1 })
 
-      expect(axios.request).toBeCalledTimes(2)
+      expect(axios.request).toBeCalledTimes(1)
       expect(response).toBeTruthy()
     })
   })
