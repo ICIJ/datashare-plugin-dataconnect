@@ -37,14 +37,15 @@ export default {
   },
   mounted () {
     this.$set(this, 'commentText', '')
+    this.setTopic()
   },
   methods: {
     async setTopic () {
       const response = await this.sendAction(`custom-fields-api/topics/${this.documentId}.json`)
       if (response) {
-        return get(response, 'data.topic_view_posts.id', null)
+        this.$set(this, 'topicId', get(response, 'data.topic_view_posts.id', null))
       } else {
-        return null
+        this.$set(this, 'topicId', null)
       }
     },
     async createCommentWithLoading () {
@@ -60,6 +61,11 @@ export default {
           this.commentText = ''
           this.$root.$emit('update-tab-label:count')
           this.$emit('created')
+
+          if (isNull(this.topicId)) {
+            this.$set(this, 'topicId', get(topic, 'data.topic_id', null))
+          }
+
         }
       }
     },
@@ -92,14 +98,15 @@ export default {
       return category
     },
     async createTopic (category) {
-      let data = {
-        raw: this.commentText,
-        skip_validations: true
-      }
+      let raw = this.commentText
 
       if (isNull(this.topicId)) {
-        const topicId = await this.setTopic()
-        this.$set(this, 'topicId', topicId)
+        raw = raw + `\n\nFind the document here: [${this.documentName}](${window.location})`
+      }
+
+      let data = {
+        raw: raw,
+        skip_validations: true
       }
 
       if (!isNull(this.topicId)) {

@@ -33,17 +33,19 @@ describe('CommentsForm.vue', () => {
     it('should set the topicId, if the topic exists', async () => {
       axios.request.mockResolvedValue({ data: { topic_view_posts: { id: 1 } } })
 
+      await wrapper.vm.setTopic()
       const topicId = await wrapper.vm.setTopic()
-      expect(axios.request).toBeCalledTimes(1)
-      expect(topicId).toEqual(1)
+      expect(axios.request).toBeCalledTimes(2)
+      expect(wrapper.vm.topicId).toEqual(1)
     })
 
     it('should keep topicId null, if topic does not exist', async () => {
       axios.request.mockResolvedValue(null)
 
+      await wrapper.vm.setTopic()
       const topicId = await wrapper.vm.setTopic()
-      expect(axios.request).toBeCalledTimes(1)
-      expect(topicId).toBeNull()
+      expect(axios.request).toBeCalledTimes(2)
+      expect(wrapper.vm.topicId).toBeNull()
     })
   })
 
@@ -123,7 +125,7 @@ describe('CommentsForm.vue', () => {
       wrapper.vm.topicId = null
       const response = await wrapper.vm.createTopic({ id: 1 })
 
-      expect(axios.request).toBeCalledTimes(2)
+      expect(axios.request).toBeCalledTimes(1)
       expect(response).toBeTruthy()
     })
 
@@ -168,7 +170,7 @@ describe('CommentsForm.vue', () => {
       axios.request.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
       const response = await wrapper.vm.createComment()
 
-      expect(axios.request).toBeCalledTimes(2)
+      expect(axios.request).toBeCalledTimes(1)
       expect(wrapper.emitted().created).toBeTruthy()
     })
   })
