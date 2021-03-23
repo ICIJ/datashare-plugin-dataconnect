@@ -1,7 +1,6 @@
-import { shallowMount, createLocalVue } from '@vue/test-utils'
+import { createLocalVue, shallowMount } from '@vue/test-utils'
 import axios from 'axios'
 import BootstrapVue from 'bootstrap-vue'
-import Vue from 'vue'
 import VueWait from 'vue-wait'
 import Vuex from 'vuex'
 
@@ -34,17 +33,15 @@ describe('CommentsForm.vue', () => {
       axios.request.mockResolvedValue({ data: { topic_view_posts: { id: 1 } } })
 
       await wrapper.vm.setTopic()
-      const topicId = await wrapper.vm.setTopic()
-      expect(axios.request).toBeCalledTimes(2)
-      expect(wrapper.vm.topicId).toEqual(1)
+      expect(axios.request).toBeCalledTimes(1)
+      expect(wrapper.vm.topicId).toBe(1)
     })
 
     it('should keep topicId null, if topic does not exist', async () => {
       axios.request.mockResolvedValue(null)
 
       await wrapper.vm.setTopic()
-      const topicId = await wrapper.vm.setTopic()
-      expect(axios.request).toBeCalledTimes(2)
+      expect(axios.request).toBeCalledTimes(1)
       expect(wrapper.vm.topicId).toBeNull()
     })
   })
@@ -108,8 +105,8 @@ describe('CommentsForm.vue', () => {
   describe('createTopic', () => {
     beforeEach(async () => {
       axios.request.mockClear()
-      wrapper.vm.commentText = 'testing comment'
-      wrapper.vm.topicId = 1
+      wrapper.vm.$set(wrapper.vm, 'commentText', 'testing comment')
+      wrapper.vm.$set(wrapper.vm, 'topicId', 1)
     })
 
     it('should return false if an error occurs', async () => {
@@ -122,7 +119,7 @@ describe('CommentsForm.vue', () => {
 
     it('should create a topic with a post if the topic does not exist', async () => {
       axios.request.mockResolvedValue({})
-      wrapper.vm.topicId = null
+      wrapper.vm.$set(wrapper.vm, 'topicId', null)
       const response = await wrapper.vm.createTopic({ id: 1 })
 
       expect(axios.request).toBeCalledTimes(1)
@@ -140,15 +137,15 @@ describe('CommentsForm.vue', () => {
 
   describe('createComment', () => {
     it('should call "createCommentWithLoading" on submit', () => {
-      wrapper.vm.commentText = 'Foo bar.'
-      wrapper.vm.createCommentWithLoading = jest.fn()
+      wrapper.vm.$set(wrapper.vm, 'commentText', 'testing comment')
+      wrapper.vm.$set(wrapper.vm, 'createCommentWithLoading', jest.fn())
       wrapper.find('.comments-form').trigger('submit')
 
       expect(wrapper.vm.createCommentWithLoading).toBeCalled()
     })
 
     it('should return false if category does not exist', async () => {
-      wrapper.vm.getCategory = jest.fn().mockReturnValue(null)
+      wrapper.vm.$set(wrapper.vm, 'getCategory', jest.fn().mockReturnValue(null))
       const response = await wrapper.vm.createComment()
 
       expect(axios.request).not.toBeCalled()
@@ -156,19 +153,19 @@ describe('CommentsForm.vue', () => {
     })
 
     it('should create a comment if topic and category exist', async () => {
-      wrapper.vm.getCategory = jest.fn().mockReturnValue({ id: 1 })
-      wrapper.vm.createTopic = jest.fn().mockReturnValue({ id: 1 })
+      wrapper.vm.$set(wrapper.vm, 'getCategory', jest.fn().mockReturnValue({ id: 1 }))
+      wrapper.vm.$set(wrapper.vm, 'createTopic', jest.fn().mockReturnValue({ id: 1 }))
       axios.request.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
 
-      const response = await wrapper.vm.createComment()
+      await wrapper.vm.createComment()
 
       expect(wrapper.emitted().created).toBeTruthy()
     })
 
     it('should create a comment if category exists but topic does not', async () => {
-      wrapper.vm.getCategory = jest.fn().mockReturnValue({ id: 1 })
+      wrapper.vm.$set(wrapper.vm, 'getCategory', jest.fn().mockReturnValue({ id: 1 }))
       axios.request.mockResolvedValue({ data: { topic_view_posts: { post_stream: { posts: [] } } } })
-      const response = await wrapper.vm.createComment()
+      await wrapper.vm.createComment()
 
       expect(axios.request).toBeCalledTimes(1)
       expect(wrapper.emitted().created).toBeTruthy()

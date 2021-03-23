@@ -105,7 +105,7 @@ export default {
       }
 
       let data = {
-        raw: raw,
+        raw,
         skip_validations: true
       }
 
