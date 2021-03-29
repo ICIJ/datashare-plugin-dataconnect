@@ -1,15 +1,15 @@
 <template>
-  <div class="comments">
-    <v-wait for="gettingComments">
+  <div class="comments d-flex flex-column h-100 overflow-auto">
+    <v-wait for="gettingComments" class="d-flex flex-column h-100 overflow-auto">
       <template slot="waiting">
         <b-spinner label="Loading the comments..." class="my-5 mx-auto d-block" />
       </template>
-      <comments-list class="comments__list" :comments="comments"></comments-list>
-      <infinite-loading :identifier="infiniteId" @infinite="infiniteHandler" v-if="useInfiniteLoading">
+      <infinite-loading :identifier="infiniteId" @infinite="infiniteHandler" direction="top" v-if="useInfiniteLoading">
         <span slot="spinner" />
         <span slot="no-more" />
         <span slot="no-results" />
       </infinite-loading>
+      <comments-list class="comments__list" :comments="comments"></comments-list>
       <comments-form class="comments__form" @created="onCreateComment"></comments-form>
     </v-wait>
   </div>
@@ -17,7 +17,7 @@
 
 <script>
 import axios from 'axios'
-import { get, flatten, has, noop, uniqueId } from 'lodash'
+import { get, flatten, keys, has, max, min, noop, values, uniqueId } from 'lodash'
 import InfiniteLoading from 'vue-infinite-loading'
 
 import CommentsForm from './CommentsForm'
@@ -38,7 +38,7 @@ export default {
   },
   data () {
     return {
-      pages: [],
+      pages: {},
       project: this.$store.state.search.index,
       documentId: this.$store.state.document.idAndRouting.id,
       infiniteId: uniqueId()
@@ -63,7 +63,8 @@ export default {
     },
     getNewComment () {
       if (this.reachedFinalPage) {
-        this.popLastEmptyPage()
+        // Refresh the infinite id to ensure we can load more
+        this.infiniteId = uniqueId()
         return this.getCurrentPageComments()
       }
       return this.getNextPageComments()
@@ -73,19 +74,17 @@ export default {
       return this.getComments({ page })
     },
     getNextPageComments () {
-      const page = this.pages.length + 1
+      const page = max(keys(this.pages)) + 1
       return this.getComments({ page })
     },
-    popLastEmptyPage () {
-      if (this.lastPage && this.lastPage.length === 0) {
-        this.pages.pop()
-        // Refresh the infinite id to ensure we can load more
-        this.infiniteId = uniqueId()
-      }
+    getPreviousPageComments () {
+      const page = min(keys(this.pages)) - 1
+      return this.getComments({ page })
     },
     async getCommentsWithLoading () {
       this.$wait.start('gettingComments')
-      await this.getComments()
+      const page = Math.ceil(await this.getCount() / this.limit)
+      await this.getComments({ page })
       this.$wait.end('gettingComments')
     },
     async getComments ({ page = 1 } = {}) {
@@ -94,13 +93,16 @@ export default {
       const response = await this.sendAction(url, { params })
       if (response) {
         const comments = get(response, 'data.topic_view_posts.post_stream.posts', [])
-        if (page > this.pages.length) {
-          this.pages.push(comments)
-        } else {
-          this.$set(this.pages, page - 1, comments)
-        }
+        this.$set(this.pages, page, comments)
       }
       return this.comments
+    },
+    async getCount () {
+      const project = this.project
+      const documentId = this.documentId
+      const url = `/api/proxy/${project}/custom-fields-api/topics/${documentId}/posts_count.json`
+      const response = await axios.request({ url, method: 'get' })
+      return get(response, 'data.posts_count', 0)
     },
     async sendAction (url, config = {}) {
       try {
@@ -112,8 +114,9 @@ export default {
       }
     },
     async infiniteHandler ($infiniteLoadingState) {
-      await this.getNextPageComments()
+      await this.getPreviousPageComments()
       // Did we reach the end?
+      console.log(this.firstPageKey)
       const method = this.reachedFinalPage ? 'complete' : 'loaded'
       // Call the right method (with "noop" as safety net in case the method can't be found)
       return get($infiniteLoadingState, method, noop)()
@@ -121,17 +124,26 @@ export default {
   },
   computed: {
     comments () {
-      return flatten(this.pages)
+      return flatten(values(this.pages))
     },
     reachedFinalPage () {
-      return this.pages.length && this.lastPage.length < this.limit
+      return this.firstPageKey === 1
+    },
+    firstPageKey () {
+      return min(keys(this.pages).map(parseInt))
+    },
+    lastPageKey () {
+      return max(keys(this.pages).map(parseInt))
+    },
+    firstPage () {
+      return this.pages[this.firstPageKey]
     },
     lastPage () {
-      return this.pages[this.pages.length - 1]
+      return this.pages[this.lastPageKey]
     },
     useInfiniteLoading () {
       // Do not use infinite loading until the first page is loaded
-      return !!this.pages.length
+      return !!keys(this.pages).length
     }
   }
 }
@@ -139,6 +151,7 @@ export default {
 
 <style lang="scss" scoped>
   .comments {
+
 
     &__list {
       padding: 1rem 1rem 0;
