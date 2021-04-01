@@ -1,15 +1,15 @@
 <template>
-  <div class="comments d-flex flex-column h-100 overflow-auto">
-    <v-wait for="gettingComments" class="d-flex flex-column h-100 overflow-auto">
+  <div class="comments d-flex flex-column h-100">
+    <v-wait for="gettingComments" class="d-flex flex-column h-100">
       <template slot="waiting">
         <b-spinner label="Loading the comments..." class="my-5 mx-auto d-block" />
       </template>
-      <infinite-loading :identifier="infiniteId" @infinite="infiniteHandler" direction="top" v-if="useInfiniteLoading">
+      <comments-list class="comments__list" :comments="comments"></comments-list>
+      <infinite-loading :identifier="infiniteId" @infinite="infiniteHandler" v-if="useInfiniteLoading">
         <span slot="spinner" />
         <span slot="no-more" />
         <span slot="no-results" />
       </infinite-loading>
-      <comments-list class="comments__list" :comments="comments"></comments-list>
       <comments-form class="comments__form" @created="onCreateComment"></comments-form>
     </v-wait>
   </div>
@@ -38,13 +38,15 @@ export default {
   },
   data () {
     return {
+      count: null,
       pages: {},
       project: this.$store.state.search.index,
       documentId: this.$store.state.document.idAndRouting.id,
       infiniteId: uniqueId()
     }
   },
-  mounted () {
+  async mounted () {
+    this.count = await this.getCount()
     this.getCommentsWithLoading()
   },
   methods: {
@@ -74,16 +76,15 @@ export default {
       return this.getComments({ page })
     },
     getNextPageComments () {
-      const page = max(keys(this.pages)) + 1
+      const page = max(this.pagesKeys) + 1
       return this.getComments({ page })
     },
     getPreviousPageComments () {
-      const page = min(keys(this.pages)) - 1
+      const page = Math.max(0, min(keys(this.pages)) - 1)
       return this.getComments({ page })
     },
-    async getCommentsWithLoading () {
+    async getCommentsWithLoading ({ page = 1 } = {}) {
       this.$wait.start('gettingComments')
-      const page = Math.ceil(await this.getCount() / this.limit)
       await this.getComments({ page })
       this.$wait.end('gettingComments')
     },
@@ -114,9 +115,8 @@ export default {
       }
     },
     async infiniteHandler ($infiniteLoadingState) {
-      await this.getPreviousPageComments()
+      await this.getNextPageComments()
       // Did we reach the end?
-      console.log(this.firstPageKey)
       const method = this.reachedFinalPage ? 'complete' : 'loaded'
       // Call the right method (with "noop" as safety net in case the method can't be found)
       return get($infiniteLoadingState, method, noop)()
@@ -127,13 +127,13 @@ export default {
       return flatten(values(this.pages))
     },
     reachedFinalPage () {
-      return this.firstPageKey === 1
+      return keys(this.pages).length >= this.estimatedPagesCount
     },
     firstPageKey () {
-      return min(keys(this.pages).map(parseInt))
+      return min(this.pagesKeys)
     },
     lastPageKey () {
-      return max(keys(this.pages).map(parseInt))
+      return max(this.pagesKeys)
     },
     firstPage () {
       return this.pages[this.firstPageKey]
@@ -144,6 +144,12 @@ export default {
     useInfiniteLoading () {
       // Do not use infinite loading until the first page is loaded
       return !!keys(this.pages).length
+    },
+    estimatedPagesCount () {
+      return this.count ? Math.ceil(this.count / this.limit) : null
+    },
+    pagesKeys () {
+      return keys(this.pages).map(parseInt)
     }
   }
 }
