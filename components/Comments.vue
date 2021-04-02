@@ -4,21 +4,18 @@
       <template slot="waiting">
         <b-spinner label="Loading the comments..." class="my-5 mx-auto d-block" />
       </template>
-      <comments-list class="comments__list" :comments="comments"></comments-list>
-      <infinite-loading :identifier="infiniteId" @infinite="infiniteHandler" v-if="useInfiniteLoading">
-        <span slot="spinner" />
-        <span slot="no-more" />
-        <span slot="no-results" />
-      </infinite-loading>
-      <comments-form class="comments__form" @created="onCreateComment"></comments-form>
+      <comments-list class="comments__list"
+                    :comments="virtualComments"
+                    :highlighted-comment-id="highlightedCommentId"
+                    @comment-placeholder-visible="onCommentPlaceholderVisible" />
+      <comments-form class="comments__form" @created="onCreateComment" />
     </v-wait>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
-import { get, flatten, has, noop, uniqueId } from 'lodash'
-import InfiniteLoading from 'vue-infinite-loading'
+import { get, flatten, keys, has, range, uniqueId, values } from 'lodash'
 
 import CommentsForm from './CommentsForm'
 import CommentsList from './CommentsList'
@@ -27,8 +24,7 @@ export default {
   name: 'Comments',
   components: {
     CommentsForm,
-    CommentsList,
-    InfiniteLoading
+    CommentsList
   },
   props: {
     limit: {
@@ -38,100 +34,108 @@ export default {
   },
   data () {
     return {
-      pages: [],
-      project: this.$store.state.search.index,
-      documentId: this.$store.state.document.idAndRouting.id,
-      infiniteId: uniqueId()
+      count: null,
+      highlightedCommentId: null,
+      pages: {},
+      requestedPages: {}
     }
   },
-  mounted () {
-    this.getCommentsWithLoading()
+  async mounted () {
+    this.$wait.start('gettingComments')
+    this.count = await this.getCount()
+    await this.getCommentsWithLoading()
   },
   methods: {
-    async onCreateComment () {
-      await this.getNewComment()
-      if (this.reachedFinalPage) {
-        await this.scrollToLastComment()
-      }
+    onCommentPlaceholderVisible ({ post_number: postNumber }) {
+      const page = Math.ceil(postNumber / this.limit)
+      return this.getCommentsOnce(page)
+    },
+    async onCreateComment ({ id: highlightedCommentId }) {
+      this.highlightedCommentId = highlightedCommentId
+      this.count = await this.getCount()
+      await this.getLastPageComments()
+      await this.scrollToLastComment()
      },
     async scrollToLastComment () {
-      // Element must be mounted
       await this.$nextTick()
       const container = this.$el.closest('.overflow-auto') || window
       const top = container.scrollHeight || document.body.scrollHeight
-      container.scroll({ top, left: 0, behavior: 'smooth' })
+      container.scrollTo(0, top)
     },
-    getNewComment () {
-      if (this.reachedFinalPage) {
-        this.popLastEmptyPage()
-        return this.getCurrentPageComments()
-      }
-      return this.getNextPageComments()
+    getLastPageComments () {
+      const page = this.estimatedPagesCount
+      return this.getComments(page)
     },
-    getCurrentPageComments () {
-      const page = this.pages.length
-      return this.getComments({ page })
-    },
-    getNextPageComments () {
-      const page = this.pages.length + 1
-      return this.getComments({ page })
-    },
-    popLastEmptyPage () {
-      if (this.lastPage && this.lastPage.length === 0) {
-        this.pages.pop()
-        // Refresh the infinite id to ensure we can load more
-        this.infiniteId = uniqueId()
-      }
-    },
-    async getCommentsWithLoading () {
+    async getCommentsWithLoading (page = 1) {
       this.$wait.start('gettingComments')
-      await this.getComments()
+      await this.getCommentsOnce(page)
       this.$wait.end('gettingComments')
     },
-    async getComments ({ page = 1 } = {}) {
+    async getComments (page = 1) {
       const params = { page, limit: this.limit }
       const url = `custom-fields-api/topics/${this.documentId}.json`
       const response = await this.sendAction(url, { params })
-      if (response) {
-        const comments = get(response, 'data.topic_view_posts.post_stream.posts', [])
-        if (page > this.pages.length) {
-          this.pages.push(comments)
-        } else {
-          this.$set(this.pages, page - 1, comments)
+      const comments = get(response, 'data.topic_view_posts.post_stream.posts', [])
+      this.$set(this.pages, page, comments)
+      return response
+    },
+    async getCommentsOnce(page = 1) {
+      if (!this.requestedPages[page]) {
+        try {
+          this.$set(this.requestedPages, page, true)
+          await this.getComments(page)
+        } catch (_) {
+          this.$delete(this.requestedPages, page)
         }
       }
-      return this.comments
+    },
+    async getCount () {
+      const project = this.project
+      const documentId = this.documentId
+      const url = `/api/proxy/${project}/custom-fields-api/topics/${documentId}/posts_count.json`
+      const response = await axios.request({ url, method: 'get' })
+      return get(response, 'data.posts_count', 0)
     },
     async sendAction (url, config = {}) {
-      try {
-        url = `api/proxy/${this.project}/${url}`
-        const response = await axios.request({ url, ...config })
-        return has(response, 'data.errors') ? false : response
-      } catch (error) {
-        return false
+      url = `api/proxy/${this.project}/${url}`
+      const response = await axios.request({ url, ...config })
+      if (has(response, 'data.errors')) {
+        throw response.data.errors
       }
-    },
-    async infiniteHandler ($infiniteLoadingState) {
-      await this.getNextPageComments()
-      // Did we reach the end?
-      const method = this.reachedFinalPage ? 'complete' : 'loaded'
-      // Call the right method (with "noop" as safety net in case the method can't be found)
-      return get($infiniteLoadingState, method, noop)()
+      return response
     }
   },
   computed: {
+    virtualPages () {
+      return range(1, this.estimatedPagesCount + 1).map(page => {
+        return this.pages[page] || range(this.limit).map(index => {
+          const id = uniqueId('comment-placeholder-')
+          const post_number = (page - 1) * this.limit + (index + 1)
+          const placeholder = true
+          return { placeholder, id, post_number }
+        })
+      })
+    },
+    virtualComments () {
+      return flatten(values(this.virtualPages))
+    },
     comments () {
-      return flatten(this.pages)
+      return flatten(values(this.pages))
     },
     reachedFinalPage () {
-      return this.pages.length && this.lastPage.length < this.limit
+      return this.comments.length >= this.count
     },
-    lastPage () {
-      return this.pages[this.pages.length - 1]
+    estimatedPagesCount () {
+      return this.count ? Math.ceil(this.count / this.limit) : null
     },
-    useInfiniteLoading () {
-      // Do not use infinite loading until the first page is loaded
-      return !!this.pages.length
+    pagesKeys () {
+      return keys(this.pages).map(p => parseInt(p))
+    },
+    project () {
+      return this.$store.state.search.index
+    },
+    documentId () {
+      return this.$store.state.document.idAndRouting.id
     }
   }
 }
@@ -140,12 +144,8 @@ export default {
 <style lang="scss" scoped>
   .comments {
 
-    &__list {
-      padding: 1rem 1rem 0;
-
-      &:empty {
-        display: none;
-      }
+    &__list:empty {
+      display: none;
     }
 
     &__form {
