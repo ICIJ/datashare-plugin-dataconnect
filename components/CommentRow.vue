@@ -1,7 +1,7 @@
 <template>
-  <div class="comment-row p-1 d-flex align-items-start">
+  <div class="comment-row d-flex align-items-start" :class="{ 'comment-row--highlight': highlight }">
     <a :href="comment | usernameUrl" class="comment-row__avatar" target="_blank">
-      <img :src="comment | avatarUrl" class="rounded-circle mr-2" />
+      <img :src="comment | avatarUrl" class="rounded-circle" />
     </a>
     <div class="w-100">
       <div class="comment-row__header d-flex">
@@ -9,9 +9,9 @@
           {{ comment.username }}
         </a>
         <div class="ml-auto">
-          <abbr class="comment-row__header__date" :title="comment.created_at | longDate($i18n.locale)">
+          <abbr class="comment-row__header__date" :title="comment.created_at | longDate(locale)">
             <a :href="comment.full_url" target="_blank">
-              {{ comment.created_at | shortDate($i18n.locale) }}
+              {{ comment.created_at | shortDate(locale) }}
             </a>
           </abbr>
         </div>
@@ -28,6 +28,9 @@ export default {
     comment: {
       type: Object,
       required: true
+    },
+    highlight: {
+      type: Boolean
     }
   },
   filters: {
@@ -57,18 +60,41 @@ export default {
         .split('src="/').join(`src="${origin}/`)
         .split('href="/').join(`target="_blank" href="${origin}/`)
     }
+  },
+  computed: {
+    locale () {
+      return this.$i18n ? this.$i18n.locale : 'en'
+    }
   }
 }
 </script>
 
-
-
-
 <style lang="scss" scoped>
-  .comment-row {
+  @keyframes highlight {
+    from {
+      background-color: var(--warning);
+    }
+    to {
+      background-color: transparent;
+    }
+  }
 
-    &__avatar img {
-      max-width: 45px;
+  .comment-row {
+    padding: 1rem;
+    border-bottom: 1px solid var(--light);
+
+    &--highlight {
+      animation: highlight 5s linear;
+      animation-play-state: initial;
+    }
+
+    &__avatar {
+      width: calc(45px + 1rem);
+
+      img {
+        width: 100%;
+        max-width: 45px;
+      }
     }
 
     &__header {
@@ -80,11 +106,6 @@ export default {
       &__date a {
         color: var(--gray)
       }
-    }
-
-    &:not(:last-of-type) {
-      margin-bottom: 1rem;
-      border-bottom: 1px solid var(--light);
     }
 
     &__text {
