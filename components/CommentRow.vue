@@ -4,7 +4,7 @@
       <img :src="comment | avatarUrl" class="rounded-circle" />
     </a>
     <div class="w-100">
-      <div class="comment-row__header d-flex">
+      <div class="comment-row__header d-flex mb-1">
         <a :href="comment | usernameUrl" target="_blank" class="comment-row__header__author font-weight-bold">
           {{ comment.username }}
         </a>
@@ -57,6 +57,7 @@ export default {
     cooked ({ cooked, full_url: fullUrl }) {
       const { origin } = new URL(fullUrl)
       return cooked
+        .split('src="//').join(`src="${window.location.protocol}//`)
         .split('src="/').join(`src="${origin}/`)
         .split('href="/').join(`target="_blank" href="${origin}/`)
     }
@@ -116,6 +117,31 @@ export default {
         height: 20px;
         vertical-align: middle;
       }
+
+      & >>> .quote {
+        margin-bottom: 1rem;
+        display: block;
+
+        .title {
+          border-left: 5px solid var(--light);
+          background-color: var(--lighter);
+          color: var(--dark);
+          padding: 0.8rem 0.8rem 0px 0.8rem;
+        }
+
+        blockquote {
+          margin: 0;
+          padding: 0.8rem;
+          border-left: 5px solid var(--light);
+          background-color: var(--lighter);
+          clear: both;
+
+          & > :last-child {
+              margin-bottom: 0;
+          }
+        }
+      }
+
     }
   }
 </style>
