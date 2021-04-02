@@ -56,16 +56,15 @@ export default {
     async createComment () {
       const category = await this.getCategory()
       if (category) {
-        const topic = await this.createTopic(category)
-        if (topic) {
+        const response = await this.createTopic(category)
+        if (response) {
           this.commentText = ''
           this.$root.$emit('update-tab-label:count')
-          this.$emit('created')
+          this.$emit('created', response.data)
 
           if (isNull(this.topicId)) {
-            this.$set(this, 'topicId', get(topic, 'data.topic_id', null))
+            this.$set(this, 'topicId', get(response, 'data.topic_id', null))
           }
-
         }
       }
     },
@@ -104,16 +103,10 @@ export default {
         raw = raw + `\n\nFind the document here: [${this.documentName}](${window.location})`
       }
 
-      let data = {
-        raw,
-        skip_validations: true
-      }
+      let data = { raw, skip_validations: true }
 
       if (!isNull(this.topicId)) {
-        data = {
-          ...data,
-          topic_id: this.topicId
-        }
+        data.topic_id = this.topicId
       } else {
         data = {
           ...data,
