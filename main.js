@@ -1,8 +1,14 @@
 import Comments from './components/Comments'
+import CommentsFloatingLink from './components/CommentsFloatingLink'
 import CommentsTabLabel from './components/CommentsTabLabel'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
-  // We register a post-pipeline function for the `document-view-tabs` category
+  // Register a floating link to the comment form
+  core.registerHook({ 
+    target: 'document.content:before', 
+    definition: CommentsFloatingLink
+  })
+  // Register a post-pipeline function for the `document-view-tabs` category
   core.registerPipeline({
     name: 'document-view-tabs',
     category: 'document-view-tabs',
