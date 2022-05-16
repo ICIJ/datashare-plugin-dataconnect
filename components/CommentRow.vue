@@ -117,6 +117,10 @@ export default {
         height: 20px;
         vertical-align: middle;
       }
+      
+      & >>> .meta {
+        display:none;
+      }
 
       & >>> .quote {
         margin-bottom: 1rem;
