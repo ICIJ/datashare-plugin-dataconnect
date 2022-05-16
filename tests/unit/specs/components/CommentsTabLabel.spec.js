@@ -26,12 +26,12 @@ describe('CommentsTabLabel.vue', () => {
     expect(wrapper.find('.comments-tab-label__label').text()).toBe("Comments")
   })
 
-  it('show 0 comments in a badge', async () => {
+  it('doesnt show 0 comments in a badge', async () => {
     const data = { "posts_count": 0 }
     axios.request.mockResolvedValue({ data })
     const wrapper = shallowMount(CommentsTabLabel, { localVue, store })
     await flushPromises()
-    expect(wrapper.find('.comments-tab-label__count').text()).toBe("0")
+    expect(wrapper.find('.comments-tab-label__count').exists()).toBeFalsy()
   })
 
   it('show 10 comments in a badge', async () => {
