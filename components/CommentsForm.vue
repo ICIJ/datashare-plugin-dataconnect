@@ -3,6 +3,7 @@
     <fieldset class="comments-form__fieldset" :disabled="$wait.is('creatingComment')">
       <b-overlay :show="$wait.is('creatingComment')" opacity="0">
           <textarea
+              autofocus
               class="comments-form__fieldset__fieldset-textarea form-control rounded-0"
               v-model="commentText"
               required
