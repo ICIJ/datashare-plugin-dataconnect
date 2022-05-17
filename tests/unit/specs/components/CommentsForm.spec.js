@@ -21,8 +21,15 @@ describe('CommentsForm.vue', () => {
 
   let wrapper = null
 
+  function createContainer() {
+    const div = document.createElement('div')
+    document.body.appendChild(div)
+    return div
+  }
+
   beforeEach(async () => {
-    wrapper = await shallowMount(CommentsForm, { localVue, store, wait })
+    const attachTo = createContainer()
+    wrapper = await shallowMount(CommentsForm, { attachTo, localVue, store, wait })
     axios.request.mockClear()
   })
 

@@ -2,12 +2,12 @@
   <form class="comments-form" @submit.prevent="createCommentWithLoading()">
     <fieldset class="comments-form__fieldset" :disabled="$wait.is('creatingComment')">
       <b-overlay :show="$wait.is('creatingComment')" opacity="0">
-          <textarea
-              autofocus
+          <b-form-textarea        
               class="comments-form__fieldset__fieldset-textarea form-control rounded-0"
               v-model="commentText"
               required
-              placeholder="Type your comment here."></textarea>
+              autofocus
+              placeholder="Type your comment here."></b-form-textarea>
       </b-overlay>
       <div class="d-flex align-items-center">
         <p class="text-muted m-0">
@@ -36,7 +36,7 @@ export default {
       topicId: null
     }
   },
-  mounted () {
+  async mounted () {
     this.$set(this, 'commentText', '')
     this.setTopic()
   },

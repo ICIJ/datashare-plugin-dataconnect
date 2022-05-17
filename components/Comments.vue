@@ -74,10 +74,14 @@ export default {
     async getComments (page = 1) {
       const params = { page, limit: this.limit }
       const url = `custom-fields-api/topics/${this.documentId}.json`
-      const response = await this.sendAction(url, { params })
-      const comments = get(response, 'data.topic_view_posts.post_stream.posts', [])
-      this.$set(this.pages, page, comments)
-      return response
+      try {
+        const response = await this.sendAction(url, { params })
+        const comments = get(response, 'data.topic_view_posts.post_stream.posts', [])
+        this.$set(this.pages, page, comments)
+      } catch (_) {
+        this.$set(this.pages, page, [])
+      }
+      return this.pages[page]
     },
     async getCommentsOnce(page = 1) {
       if (!this.requestedPages[page]) {
@@ -92,9 +96,13 @@ export default {
     async getCount () {
       const project = this.project
       const documentId = this.documentId
-      const url = `/api/proxy/${project}/custom-fields-api/topics/${documentId}/posts_count.json`
-      const response = await axios.request({ url, method: 'get' })
-      return get(response, 'data.posts_count', 0)
+      try {
+        const url = `/api/proxy/${project}/custom-fields-api/topics/${documentId}/posts_count.json`
+        const response = await axios.request({ url, method: 'get' })
+        return get(response, 'data.posts_count', 0)
+      } catch(_) {
+        return 0
+      }
     },
     async sendAction (url, config = {}) {
       url = `api/proxy/${this.project}/${url}`
