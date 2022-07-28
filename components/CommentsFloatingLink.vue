@@ -30,6 +30,7 @@ export default {
     line-height: 3rem;
     border-radius: 1.5rem;
     padding: 0;
+    z-index: 500;
 
     & > * {
       position: absolute;
