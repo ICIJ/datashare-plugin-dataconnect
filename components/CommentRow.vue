@@ -112,17 +112,17 @@ export default {
     &__text {
       max-width: 690px;
 
-      & >>> img.emoji {
+      &:deep(img.emoji) {
         width: 20px;
         height: 20px;
         vertical-align: middle;
       }
       
-      & >>> .meta {
+      &:deep(.meta) {
         display:none;
       }
 
-      & >>> .quote {
+      &:deep(.quote) {
         margin-bottom: 1rem;
         display: block;
 
