@@ -17,8 +17,8 @@
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
-import CommentPlaceholder from './CommentPlaceholder'
-import CommentRow from './CommentRow'
+import CommentPlaceholder from './CommentPlaceholder.vue'
+import CommentRow from './CommentRow.vue'
 
 export default {
   name: 'CommentsList',

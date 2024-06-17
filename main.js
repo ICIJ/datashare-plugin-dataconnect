@@ -1,6 +1,6 @@
-import Comments from './components/Comments'
-import CommentsFloatingLink from './components/CommentsFloatingLink'
-import CommentsTabLabel from './components/CommentsTabLabel'
+import Comments from './components/Comments.vue'
+import CommentsFloatingLink from './components/CommentsFloatingLink.vue'
+import CommentsTabLabel from './components/CommentsTabLabel.vue'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   // Register a floating link to the comment form

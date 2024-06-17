@@ -17,8 +17,8 @@
 import axios from 'axios'
 import { get, flatten, keys, has, range, uniqueId, values } from 'lodash'
 
-import CommentsForm from './CommentsForm'
-import CommentsList from './CommentsList'
+import CommentsForm from './CommentsForm.vue'
+import CommentsList from './CommentsList.vue'
 
 export default {
   name: 'Comments',
