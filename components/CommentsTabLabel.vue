@@ -3,7 +3,7 @@
     <span class="comments-tab-label__label">
       Comments
     </span>
-    <sup class="comments-tab-label__count badge badge-secondary" v-html="count" v-if="count > 0"></sup>
+    <sup class="comments-tab-label__count badge text-bg-secondary" v-html="count" v-if="count > 0"></sup>
   </span>
 </template>
 
@@ -26,11 +26,11 @@
       document () {
         return this.$store.state.document.doc
       },
-      documentId () {
-        return this.document.id
-      },
       project () {
-        return this.$store.state.search.index
+        return this.$store.state.document.idAndRouting.index
+      },
+      documentId () {
+        return this.$store.state.document.idAndRouting.id
       }
     },
     watch: {

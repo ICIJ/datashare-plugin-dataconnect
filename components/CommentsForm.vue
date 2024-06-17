@@ -32,7 +32,7 @@ export default {
       commentText: '',
       documentId: this.$store.state.document.idAndRouting.id,
       documentName: last(this.$store.state.document.doc.slicedName),
-      project: this.$store.state.search.index,
+      project: this.$store.state.document.idAndRouting.index,
       topicId: null
     }
   },

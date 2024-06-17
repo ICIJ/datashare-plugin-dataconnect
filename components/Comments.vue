@@ -140,7 +140,7 @@ export default {
       return keys(this.pages).map(p => parseInt(p))
     },
     project () {
-      return this.$store.state.search.index
+      return this.$store.state.document.idAndRouting.index
     },
     documentId () {
       return this.$store.state.document.idAndRouting.id
@@ -158,7 +158,7 @@ export default {
 
     &__form {
       padding: 1rem;
-      background: var(--lighter);
+      background: var(--bs-light);
       position: sticky;
       bottom:0;
       left: 0;
