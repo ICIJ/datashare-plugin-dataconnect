@@ -1,3 +1,4 @@
+import { markRaw } from 'vue'
 import Comments from './components/Comments.vue'
 import CommentsFloatingLink from './components/CommentsFloatingLink.vue'
 import CommentsTabLabel from './components/CommentsTabLabel.vue'
@@ -17,10 +18,10 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       const tab = {
         name: 'comments-tab',
         label: 'Comments',
-        labelComponent: CommentsTabLabel,
+        labelComponent: markRaw(CommentsTabLabel),
         icon: 'align-left',
         props: { document },
-        component: Comments
+        component: markRaw(Comments)
       }
       return [...tabs, tab]
     }
