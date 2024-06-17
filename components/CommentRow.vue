@@ -8,7 +8,7 @@
         <a :href="comment | usernameUrl" target="_blank" class="comment-row__header__author font-weight-bold">
           {{ comment.username }}
         </a>
-        <div class="ml-auto">
+        <div class="ms-auto">
           <abbr class="comment-row__header__date" :title="comment.created_at | longDate(locale)">
             <a :href="comment.full_url" target="_blank">
               {{ comment.created_at | shortDate(locale) }}
