@@ -1,17 +1,17 @@
 <template>
   <div class="comment-row d-flex align-items-start" :class="{ 'comment-row--highlight': highlight }">
-    <a :href="comment | usernameUrl" class="comment-row__avatar" target="_blank">
-      <img :src="comment | avatarUrl" class="rounded-circle" />
+    <a :href="usernameUrl(comment)" class="comment-row__avatar" target="_blank">
+      <img :src="avatarUrl(comment)" class="rounded-circle" />
     </a>
     <div class="w-100">
       <div class="comment-row__header d-flex mb-1">
-        <a :href="comment | usernameUrl" target="_blank" class="comment-row__header__author font-weight-bold">
+        <a :href="usernameUrl(comment)" target="_blank" class="comment-row__header__author font-weight-bold">
           {{ comment.username }}
         </a>
         <div class="ms-auto">
-          <abbr class="comment-row__header__date" :title="comment.created_at | longDate(locale)">
+          <abbr class="comment-row__header__date" :title="longDate(comment.created_at, locale)">
             <a :href="comment.full_url" target="_blank">
-              {{ comment.created_at | shortDate(locale) }}
+              {{ shortDate(comment.created_at, locale) }}
             </a>
           </abbr>
         </div>
@@ -33,7 +33,14 @@ export default {
       type: Boolean
     }
   },
-  filters: {
+  methods: {
+    cooked ({ cooked, full_url: fullUrl }) {
+      const { origin } = new URL(fullUrl)
+      return cooked
+        .split('src="//').join(`src="${window.location.protocol}//`)
+        .split('src="/').join(`src="${origin}/`)
+        .split('href="/').join(`target="_blank" href="${origin}/`)
+    },
     shortDate (dateStr, locale) {
       const date = new Date(dateStr)
       const options = { month: "short", day: "numeric", year: "2-digit", hour: "numeric", minute: "numeric" }
@@ -51,15 +58,6 @@ export default {
     usernameUrl ({ full_url: fullUrl, username }) {
       const { origin } = new URL(fullUrl)
       return `${origin}/u/${username}/`
-    }
-  },
-  methods: {
-    cooked ({ cooked, full_url: fullUrl }) {
-      const { origin } = new URL(fullUrl)
-      return cooked
-        .split('src="//').join(`src="${window.location.protocol}//`)
-        .split('src="/').join(`src="${origin}/`)
-        .split('href="/').join(`target="_blank" href="${origin}/`)
     }
   },
   computed: {

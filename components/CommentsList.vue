@@ -3,7 +3,7 @@
     <dynamic-scroller :items="comments" :min-item-size="85" page-mode>
       <template v-slot="{ item, index, active }">
         <dynamic-scroller-item :item="item" :active="active" :size-dependencies="[ item.cooked, ]" :data-index="index">
-          <component :is="item | commentComponent"
+          <component :is="commentComponent(item)"
                      :comment="item" class="comments-list__comment"
                      :highlight="highlightedCommentId === item.id"
                      @visible="onCommentPlaceholderVisible" />
@@ -36,14 +36,12 @@ export default {
       default: null
     }
   },
-  filters: {
-    commentComponent ({ placeholder }) {
-      return placeholder ? CommentPlaceholder : CommentRow
-    }
-  },
   methods: {
     onCommentPlaceholderVisible (comment) {
       this.$emit('comment-placeholder-visible', comment)
+    },
+    commentComponent ({ placeholder }) {
+      return placeholder ? CommentPlaceholder : CommentRow
     }
   }
 }
