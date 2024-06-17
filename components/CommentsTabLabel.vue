@@ -19,7 +19,7 @@
       }
     },
     mounted () {
-      this.$root.$on("update-tab-label:count", () => this.initCount())
+      this.$core.on("update-tab-label:count", () => this.initCount())
       this.initCount()
     },
     computed: {
