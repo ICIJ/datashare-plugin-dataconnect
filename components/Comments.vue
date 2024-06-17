@@ -77,16 +77,16 @@ export default {
       try {
         const response = await this.sendAction(url, { params })
         const comments = get(response, 'data.topic_view_posts.post_stream.posts', [])
-        this.$set(this.pages, page, comments)
+        this.pages[page] = comments
       } catch (_) {
-        this.$set(this.pages, page, [])
+        this.pages[page] = []
       }
       return this.pages[page]
     },
     async getCommentsOnce(page = 1) {
       if (!this.requestedPages[page]) {
         try {
-          this.$set(this.requestedPages, page, true)
+          this.requestedPages[page] = true
           await this.getComments(page)
         } catch (_) {
           this.$delete(this.requestedPages, page)

@@ -7,13 +7,13 @@
               v-model="commentText"
               required
               autofocus
-              placeholder="Type your comment here."></b-form-textarea>
+              placeholder="Type your comment here." />
       </b-overlay>
       <div class="d-flex align-items-center">
         <p class="text-muted m-0">
           Your comment with also be visible on the iHub.
         </p>
-        <button class="comments-form__fieldset__button btn btn-primary mt-2 ml-auto" type="submit">
+        <button class="comments-form__fieldset__button btn btn-primary mt-2 ms-auto" type="submit">
           Post
         </button>
       </div>
@@ -37,16 +37,16 @@ export default {
     }
   },
   async mounted () {
-    this.$set(this, 'commentText', '')
+    this.commentText = ''
     this.setTopic()
   },
   methods: {
     async setTopic () {
       const response = await this.sendAction(`custom-fields-api/topics/${this.documentId}.json`)
       if (response) {
-        this.$set(this, 'topicId', get(response, 'data.topic_view_posts.id', null))
+        this.topicId = get(response, 'data.topic_view_posts.id', null)
       } else {
-        this.$set(this, 'topicId', null)
+        this.topicId = null
       }
     },
     async createCommentWithLoading () {
@@ -64,7 +64,7 @@ export default {
           this.$emit('created', response.data)
 
           if (isNull(this.topicId)) {
-            this.$set(this, 'topicId', get(response, 'data.topic_id', null))
+            this.topicId = get(response, 'data.topic_id', null)
           }
         }
       }
