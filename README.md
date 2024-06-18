@@ -5,32 +5,52 @@
 A Datashare plugin to create DataConnect, a bridge between Datashare and iHub.
 To be used with [datashare-extension-dataconnect](https://github.com/ICIJ/datashare-extension-dataconnect/) and [custom-fields-api](https://github.com/ICIJ/custom-fields-api).
 
-# New release
+## 🤸 New release
 
-First, ensure that your local environment is up to date:
+This guide will help you publish a new release by following a few simple steps. We'll ensure your environment is updated, customize your commit message, and create a version tag. Let's get started!
 
-```
+### Step 1: Update Your Local Environment
+
+Before making any changes, ensure that your local repository is synchronized with the latest updates from the remote repository:
+
+```bash
 git pull origin main --rebase --tags
 ```
 
-Customize the commit message format for bumping the version:
+### Step 2: Customize the Commit Message Format
 
-```
+To keep track of version changes, customize the commit message format for bumping the version. This step ensures that every version bump commit is clearly labeled using semantic commit:
+
+```bash
 yarn config set version-git-message "bump: %s"
 ```
 
-Then create a tag of the release:
+### Step 3: Create a Release Tag
 
-```
+For a **major** version bump (significant changes or backward-incompatible changes), use:
+
+```bash
 yarn version --major
+```
+
+For a **minor** version bump (backward-compatible new features), use:
+
+```bash
 yarn version --minor
+```
+
+For a **patch** version bump (backward-compatible bug fixes), use:
+
+```bash
 yarn version --patch
 ```
 
-Push your tag: 
+### Step 4: Push Your Changes to Remote
 
-```
+Finally, push the new version tag to the remote repository. This step triggers the GitHub Action to publish the new release:
+
+```bash
 git push origin main --tags
 ```
 
-The plugin is configured so that CircleCI manages the release. If your tag builds successfully in CircleCI, it will be published as a release automatically.
+Your new release is now published!
