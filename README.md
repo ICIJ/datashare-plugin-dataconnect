@@ -13,6 +13,12 @@ First, ensure that your local environment is up to date:
 git pull origin main --rebase --tags
 ```
 
+Customize the commit message format for bumping the version:
+
+```
+yarn config set version-git-message "bump: %s"
+```
+
 Then create a tag of the release:
 
 ```
