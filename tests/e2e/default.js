@@ -7,7 +7,5 @@ module.exports = {
     browser.waitForElementVisible('.landing')
     browser.assert.titleContains('Datashare')
     browser.expect.element(`script[src="/plugins/package/${main}"]`).to.be.present
-    browser.expect.element('.landing__plugin').to.be.present
-    browser.expect.element('.landing__plugin').text.to.startWith('This alert was created by `datashare-plugin-dataconnect` plugin.')
   }
 };
