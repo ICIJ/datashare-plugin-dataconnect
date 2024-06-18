@@ -62,7 +62,7 @@ export default {
   },
   computed: {
     locale () {
-      return this.$i18n ? this.$i18n.locale : 'en'
+      return this?.$i18n?.locale ?? 'en'
     }
   }
 }
