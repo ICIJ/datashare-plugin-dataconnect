@@ -16,6 +16,10 @@ class CorePlugin {
     return new Store({ state })
   }
 
+  on() {
+    return vi.fn()
+  }
+
   get store() {
     this._store = this._store || this.createStore()
     return this._store
