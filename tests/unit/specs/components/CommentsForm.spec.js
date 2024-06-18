@@ -4,7 +4,7 @@ import BootstrapVue from 'bootstrap-vue'
 import VueWait from 'vue-wait'
 import Vuex from 'vuex'
 
-import CommentsForm from '../../../../components/CommentsForm.vue'
+import CommentsForm from '@components/CommentsForm.vue'
 
 const localVue = createLocalVue()
 

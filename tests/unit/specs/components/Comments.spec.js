@@ -5,7 +5,7 @@ import Vue from 'vue'
 import VueWait from 'vue-wait'
 import Vuex from 'vuex'
 
-import Comments from '../../../../components/Comments.vue'
+import Comments from '@components/Comments.vue'
 
 const localVue = createLocalVue()
 localVue.use(BootstrapVue)

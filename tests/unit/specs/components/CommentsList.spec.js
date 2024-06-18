@@ -4,9 +4,9 @@ import { RecycleScroller } from 'vue-virtual-scroller'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import CommentsList from '../../../../components/CommentsList.vue'
-import CommentPlaceholder from '../../../../components/CommentPlaceholder.vue'
-import CommentRow from '../../../../components/CommentRow.vue'
+import CommentsList from '@components/CommentsList.vue'
+import CommentPlaceholder from '@components/CommentPlaceholder.vue'
+import CommentRow from '@components/CommentRow.vue'
 
 const localVue = createLocalVue()
 localVue.use(Vuex)

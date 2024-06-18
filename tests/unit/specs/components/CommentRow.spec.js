@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import CorePlugin from '../../CorePlugin.js'
-import CommentRow from '../../../../components/CommentRow.vue'
+import CommentRow from '@components/CommentRow.vue'
 
 describe('CommentRow.vue', () => {
   let plugins, wrapper

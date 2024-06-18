@@ -3,7 +3,7 @@ import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import CommentsTabLabel from '../../../../components/CommentsTabLabel.vue'
+import CommentsTabLabel from '@components/CommentsTabLabel.vue'
 
 const localVue = createLocalVue()
 localVue.use(Vuex)
