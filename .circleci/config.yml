@@ -3,7 +3,7 @@ version: 2.1
 executors:
   global-executor:
     docker:
-      - image: circleci/node:14.15.5
+      - image: cimg/node:18.19.1-browsers
     working_directory: ~/datashare-plugin-dataconnect
 
 commands:
@@ -63,9 +63,6 @@ workflows:
   build_and_release:
     jobs:
       - build:
-          filters:
-            tags:
-              only: /.*/
       - release:
           requires:
             - build
