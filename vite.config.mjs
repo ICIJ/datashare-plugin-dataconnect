@@ -17,13 +17,13 @@ export default ({ mode }) => {
     plugins: [
       vue(),
       // Map Vue imports to the global `__VUE_SHARED__` and `__VUEX_SHARED__` objects on from `window`.
-      viteExternalsPlugin({ vue: '__VUE_SHARED__', vuex: '__VUEX_SHARED__' })
+      // In test mode, Vue is provided by the test environment, so we don't need to externalize it.
+      mode !== 'test' ? viteExternalsPlugin({ vue: '__VUE_SHARED__', vuex: '__VUEX_SHARED__' }) : null
     ],
     test: {
       globals: true,
       reporters: 'basic',
-      environment: 'jsdom',
-      setupFiles: [path.resolve(__dirname, 'tests/unit/vitest.setup.js')]
+      environment: 'jsdom'
     },
     build: {
       lib: {
@@ -35,7 +35,7 @@ export default ({ mode }) => {
     resolve: {
       dedupe: ['vue'],
       alias: {
-        '@': path.resolve(__dirname, './src')
+        '@components': path.resolve(__dirname, './components')
       }
     }
   })
