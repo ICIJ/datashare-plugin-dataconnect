@@ -4,6 +4,9 @@ executors:
   global-executor:
     docker:
       - image: cimg/node:18.19.1-browsers
+        environment:
+          - DATASHARE_VERSION=16.0.3
+          - DATASHARE_PACKAGE=datashare-16.0.3.deb
     working_directory: ~/datashare-plugin-dataconnect
 
 workflows:
@@ -45,8 +48,18 @@ jobs:
     steps:
       - checkout-and-install
       - run:
-          name: Run yarn unit tests
-          command: yarn test:unit
+          name: Download Datashare for Debian
+          command: wget "https://github.com/ICIJ/datashare-installer/releases/download/${DATASHARE_VERSION}/${DATASHARE_PACKAGE}"
+      - run:
+          name: Install Datashare
+          command: (sudo apt update || /bin/true) && sudo apt install ./$DATASHARE_PACKAGE
+      - run:
+          name: Run Datashare in background
+          command: mkdir -p tmp && yarn run test:datashare
+          background: true
+      - run:
+          name: Run all tests
+          command: yarn test
 
   release:
     executor: global-executor
