@@ -19,12 +19,23 @@ export default ({ mode }) => {
       // Map Vue imports to the global `__VUE_SHARED__` and `__VUEX_SHARED__` objects on from `window`.
       viteExternalsPlugin({ vue: '__VUE_SHARED__', vuex: '__VUEX_SHARED__' })
     ],
+    test: {
+      globals: true,
+      reporters: 'basic',
+      environment: 'jsdom',
+      setupFiles: [path.resolve(__dirname, 'tests/unit/vitest.setup.js')]
+    },
     build: {
-      sourcemap: mode === 'development',
       lib: {
         entry: path.resolve(__dirname, 'main.js'),
         name: 'index',
         fileName: 'index'
+      }
+    },
+    resolve: {
+      dedupe: ['vue'],
+      alias: {
+        '@': path.resolve(__dirname, './src')
       }
     }
   })
