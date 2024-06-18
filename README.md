@@ -1,4 +1,4 @@
-# datashare-plugin-dataconnect
+# Datashare Plugin : Dataconnect
 
 [![](https://img.shields.io/github/actions/workflow/status/icij/datashare-plugin-dataconnect/main.yml)](https://github.com/ICIJ/datashare-plugin-dataconnect/actions)
 
