@@ -27,8 +27,9 @@ class CorePlugin {
 
   get stubs () {
     const BSpinner = { template: '<span />'}
+    const ContentPlaceholder = { template: '<span><slot /></span>'}
     const VWait = { template: '<span><slot /></span>'}
-    return { BSpinner, VWait }
+    return { BSpinner, ContentPlaceholder, VWait }
   }
 
   static init(...args) {
