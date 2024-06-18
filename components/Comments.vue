@@ -89,7 +89,7 @@ export default {
           this.requestedPages[page] = true
           await this.getComments(page)
         } catch (_) {
-          this.$delete(this.requestedPages, page)
+          delete this.requestedPages[page]
         }
       }
     },
