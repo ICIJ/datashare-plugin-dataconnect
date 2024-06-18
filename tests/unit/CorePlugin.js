@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { Store } from 'vuex'
 
 class CorePlugin {
