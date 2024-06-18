@@ -1,4 +1,4 @@
-name: Datashare Plugin Dataconnect - CI
+name: Dataconnect Plugin - CI
 
 on:
   push:
@@ -19,16 +19,8 @@ jobs:
         with:
           node-version: '18.19.1'
 
-      - name: Cache Yarn dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/yarn
-          key: yarn-packages-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            yarn-packages-${{ runner.os }}-
-
       - name: Install dependencies
-        run: yarn install --immutable
+        run: yarn --frozen-lockfile
 
       - name: Download Datashare for Debian
         run: wget "https://github.com/ICIJ/datashare-installer/releases/download/${{ env.DATASHARE_VERSION }}/${{ env.DATASHARE_PACKAGE }}"
@@ -59,16 +51,8 @@ jobs:
         with:
           node-version: '18.19.1'
 
-      - name: Cache Yarn dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/yarn
-          key: yarn-packages-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            yarn-packages-${{ runner.os }}-
-
       - name: Install dependencies
-        run: yarn install --immutable
+        run: yarn --frozen-lockfile
 
       - name: Make distribution
         run: yarn build
@@ -82,13 +66,8 @@ jobs:
           zip -r datashare-plugin-dataconnect-${{ github.ref_name }}.zip datashare-plugin-dataconnect-${{ github.ref_name }}
 
       - name: Upload release assets
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          upload_url=$(curl -X POST -s -H "Accept: application/vnd.github.v3+json" -H "Authorization: token $GITHUB_TOKEN" -d "{\"tag_name\":\"${{ github.ref_name }}\", \"name\":\"${{ github.ref_name }}\",\"body\":\"release ${{ github.ref_name }}\"}" "https://api.github.com/repos/${{ github.repository }}/releases" | jq -r '.upload_url')
-          upload_url="${upload_url%\{*}"
-          echo "Uploading asset to release url: $upload_url"
-          zip_content_length=$(stat -c%s "datashare-plugin-dataconnect-${{ github.ref_name }}.zip")
-          tar_content_length=$(stat -c%s "datashare-plugin-dataconnect-${{ github.ref_name }}.tgz")
-          curl -X POST -s -m 120 -H "Accept: application/vnd.github.v3+json" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/zip" -H "Content-Length: $zip_content_length" --data-binary "@datashare-plugin-dataconnect-${{ github.ref_name }}.zip" "$upload_url?name=datashare-plugin-dataconnect-${{ github.ref_name }}.zip&label=datashare-plugin-dataconnect-${{ github.ref_name }}.zip"
-          curl -X POST -s -m 120 -H "Accept: application/vnd.github.v3+json" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/gzip" -H "Content-Length: $tar_content_length" --data-binary "@datashare-plugin-dataconnect-${{ github.ref_name }}.tgz" "$upload_url?name=datashare-plugin-dataconnect-${{ github.ref_name }}.tgz&label=datashare-plugin-dataconnect-${{ github.ref_name }}.tgz"
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            datashare-plugin-dataconnect-${{ github.ref_name }}.tgz
+            datashare-plugin-dataconnect-${{ github.ref_name }}.zip
