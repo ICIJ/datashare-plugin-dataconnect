@@ -1,4 +1,4 @@
-const { main } = require('../../package.json')
+const { main, style } = require('../../package.json')
 
 module.exports = {
   'default configuration test' : function (browser) {
@@ -7,5 +7,6 @@ module.exports = {
     browser.waitForElementVisible('.landing')
     browser.assert.titleContains('Datashare')
     browser.expect.element(`script[src="/plugins/package/${main}"]`).to.be.present
+    browser.expect.element(`link[href="/plugins/package/${style}"]`).to.be.present
   }
 };
