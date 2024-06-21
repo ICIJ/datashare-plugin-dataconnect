@@ -62,7 +62,6 @@ describe('CommentsList.vue', () => {
   
     it('shows 0 comments', async () => {
       await wrapper.setProps({ comments: [] })
-      console.log(wrapper.html())
       expect(wrapper.findComponent(CommentRow).exists()).toBeFalsy()
       expect(wrapper.findAllComponents(CommentRow).length).toBe(0)
     })
