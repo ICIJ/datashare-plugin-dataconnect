@@ -39,8 +39,8 @@ jobs:
     needs: build
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/v')
     env:
-      DATASHARE_VERSION: '16.0.3'
-      DATASHARE_PACKAGE: 'datashare-16.0.3.deb'
+      DATASHARE_VERSION: '17.0.4'
+      DATASHARE_PACKAGE: 'datashare-17.0.4.deb'
 
     steps:
       - name: Checkout code
