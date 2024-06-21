@@ -10,14 +10,13 @@ export default {
 </script>
 
 <template>
-  <b-button 
-    @click="$root.$emit('document::tab', 'comments-tab')"
-    class="comments-floating-link" 
+  <router-link 
+    :to="{ query: { tab: 'comments-tab' } }"
+    class="comments-floating-link btn btn-secondary" 
     title="Leave a comment" 
-    v-b-tooltip
-    variant="secondary">
+    v-b-tooltip>
     <fa :icon="$options.icons.faReply" /> 
-  </b-button>
+  </router-link>
 </template>
 
 <style lang="scss" scoped>
