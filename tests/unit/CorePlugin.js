@@ -32,7 +32,9 @@ class CorePlugin {
     const BSpinner = { template: '<span />'}
     const ContentPlaceholder = { template: '<span><slot /></span>'}
     const VWait = { template: '<span><slot /></span>'}
-    return { BSpinner, ContentPlaceholder, VWait }
+    const BFormTextarea = true
+    const BOverlay = { template: '<span><slot /></span>'}
+    return { BFormTextarea, BOverlay, BSpinner, ContentPlaceholder, VWait }
   }
 
   static init(...args) {
