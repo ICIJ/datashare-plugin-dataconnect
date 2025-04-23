@@ -1,40 +1,50 @@
-import { Store } from 'vuex'
+import { createPinia } from 'pinia'
 
 class CorePlugin {
-
   install(app) {
     app.config.globalProperties.$core = this
-    app.config.globalProperties.$t = vi.fn().mockImplementation((key) => key)
-    app.config.globalProperties.$i18n = { locale : 'en' }
-    app.config.globalProperties.$wait = { start: vi.fn(), end: vi.fn(), is: vi.fn() }
+    app.config.globalProperties.$t = (key) => key
   }
 
-  createStore() {
-    const document = { doc: { slicedName: 'test.pdf' }, idAndRouting: { id: '1', index: 'banana-papers' } }
-    const state = { document, search: { index: 'banana-papers' } }
-    return new Store({ state })
+  findComponent(path) {
+    const name = path.split('/').pop()
+    const template = `
+      <span>
+        <slot />
+        <slot name="text" />
+      </span>
+    `
+    return { name, template }
   }
 
-  on() {
-    return vi.fn()
+  get stores() {
+    return {
+      useDocumentStore() {
+        return {
+          document: {
+            id: '1',
+            index: 'banana-papers',
+            slicedName: ['test.pdf']
+          }
+        }
+      },
+      useWaitStore() {
+        return {
+          isLoading: false,
+          isReady: true,
+          waitFor: (fn) => fn()
+        }
+      }
+    }
   }
 
-  get store() {
-    this._store = this._store || this.createStore()
-    return this._store
+  get pinia() {
+    this._pinia = this._pinia || createPinia()
+    return this._pinia
   }
 
   get plugins() {
-    return [this, this.store]
-  }
-
-  get stubs () {
-    const BSpinner = { template: '<span />'}
-    const ContentPlaceholder = { template: '<span><slot /></span>'}
-    const VWait = { template: '<span><slot /></span>'}
-    const BFormTextarea = true
-    const BOverlay = { template: '<span><slot /></span>'}
-    return { BFormTextarea, BOverlay, BSpinner, ContentPlaceholder, VWait }
+    return [this, this.pinia]
   }
 
   static init(...args) {
