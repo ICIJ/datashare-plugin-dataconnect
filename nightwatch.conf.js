@@ -8,11 +8,11 @@ module.exports = {
   test_settings: {
     default: {
       launch_url: 'about:blank',
-      desiredCapabilities : {
-        browserName : 'firefox',
+      desiredCapabilities: {
+        browserName: 'firefox',
         alwaysMatch: {
           'moz:firefoxOptions': {
-            args: ['-headless'],
+            args: ['-headless']
           }
         }
       }
