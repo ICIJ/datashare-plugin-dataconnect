@@ -1,24 +1,22 @@
-import { markRaw } from 'vue'
-import Comments from './components/Comments.vue'
-import CommentsFloatingLink from './components/CommentsFloatingLink.vue'
-import CommentsTabLabel from './components/CommentsTabLabel.vue'
+import CommentsCard from './components/CommentsCard.vue'
+import CommentsToggler from './components/CommentsToggler.vue'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
-  // Register a post-pipeline function for the `document-view-tabs` category
-  core.registerPipeline({
-    name: 'document-view-tabs',
-    category: 'document-view-tabs',
-    // The function that is applied to the tabs list
-    type (tabs, document) {
-      const tab = {
-        name: 'comments-tab',
-        label: 'Comments',
-        labelComponent: markRaw(CommentsTabLabel),
-        icon: 'align-left',
-        props: { document },
-        component: markRaw(Comments)
-      }
-      return [...tabs, tab]
+  core.i18n.global.mergeLocaleMessage('en', {
+    commentsToggler: {
+      label: '0 comments | 1 comment | {n} comments'
     }
+  })
+
+  core.registerHook({
+    name: 'document-user-actions-comments-toggler',
+    target: 'document-user-actions:after',
+    definition: CommentsToggler
+  })
+
+  core.registerHook({
+    name: 'document-user-actions-comments-card',
+    target: 'document-user-actions-cards:after',
+    definition: CommentsCard
   })
 })
