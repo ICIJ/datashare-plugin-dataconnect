@@ -1,7 +1,7 @@
 const { main, style } = require('../../package.json')
 
 module.exports = {
-  'default configuration test' : function (browser) {
+  'default configuration test': function (browser) {
     browser.url('http://localhost:8008')
     // Wait for the app to be started
     browser.waitForElementVisible('.landing')
@@ -9,4 +9,4 @@ module.exports = {
     browser.expect.element(`script[src="/plugins/package/${main}"]`).to.be.present
     browser.expect.element(`link[href="/plugins/package/${style}"]`).to.be.present
   }
-};
+}
