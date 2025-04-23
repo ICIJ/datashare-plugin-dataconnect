@@ -25,17 +25,23 @@ jobs:
       - name: Lint code
         run: yarn lint
 
+      - name: Run unit tests
+        run: yarn test:unit
+
       - name: Download Datashare for Debian
         run: wget "https://github.com/ICIJ/datashare-installer/releases/download/${{ env.DATASHARE_VERSION }}/${{ env.DATASHARE_PACKAGE }}"
 
       - name: Install Datashare
-        run: sudo apt install -y ./${{ env.DATASHARE_PACKAGE }}
+        run: sudo apt install --no-install-recommends -y ./${{ env.DATASHARE_PACKAGE }} -no-install-recommends
 
       - name: Run Datashare in background
-        run: mkdir -p tmp && yarn run test:datashare &
-      
-      - name: Run all tests
-        run: yarn test
+        run: mkdir -p tmp && yarn run test:datashare &      
+
+      - name: Build package for e2e tests
+        run: yarn build && yarn test:pack
+
+      - name: Run e2e tests
+        run: yarn test:e2e
 
   release:
     runs-on: ubuntu-latest
