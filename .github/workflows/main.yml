@@ -32,7 +32,7 @@ jobs:
         run: wget "https://github.com/ICIJ/datashare-installer/releases/download/${{ env.DATASHARE_VERSION }}/${{ env.DATASHARE_PACKAGE }}"
 
       - name: Install Datashare
-        run: sudo apt install --no-install-recommends -y ./${{ env.DATASHARE_PACKAGE }} -no-install-recommends
+        run: sudo apt install --no-install-recommends -y ./${{ env.DATASHARE_PACKAGE }}
 
       - name: Run Datashare in background
         run: mkdir -p tmp && yarn run test:datashare &      
