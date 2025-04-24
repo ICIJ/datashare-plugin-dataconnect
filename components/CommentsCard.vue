@@ -37,6 +37,7 @@ async function onPlaceholderVisible({ post_number: commentNumber }) {
 <template>
   <document-user-comments
     v-if="documentCommentsStore.card.visible"
+    no-sort
     :count="count"
     :comments="virtualComments"
     @submit="createAndFetchComment"
