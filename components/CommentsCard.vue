@@ -1,10 +1,11 @@
 <script setup>
-import { useTemplateRef } from 'vue'
+import { ref, useTemplateRef, onBeforeMount } from 'vue'
 
 import CommentsCardList from './CommentsCardList'
 
 import { useCoreComponent } from '@/composables/useCoreComponent'
 import { useDocumentComments } from '@/composables/useDocumentComments'
+import { useWait } from '@/composables/useWait'
 import { useDocumentCommentsStore } from '@/stores/documentComments'
 
 const { document } = defineProps({
@@ -16,28 +17,38 @@ const { document } = defineProps({
 const DocumentUserComments = await useCoreComponent('Document/DocumentUser/DocumentUserComments/DocumentUserComments')
 const documentCommentsStore = useDocumentCommentsStore()
 const list = useTemplateRef('list')
+const comment = ref('')
+const { waitFor, isLoading } = useWait()
 const { count, fetchCommentsCount, fetchCommentPage, fetchLastPage, createComment, virtualComments } =
   useDocumentComments(document)
 
-await fetchCommentsCount()
-await fetchLastPage()
+const fetch = waitFor(async () => {
+  await fetchCommentsCount()
+  await fetchLastPage()
+})
 
-async function createAndFetchComment(raw) {
-  await createComment(raw)
+const createAndFetchComment = waitFor(async () => {
+  await createComment(comment.value)
   await fetchCommentsCount()
   await fetchLastPage()
   await list.value?.scrollToBottom()
-}
+  // Finally, reset the comment input
+  comment.value = ''
+})
 
 async function onPlaceholderVisible({ post_number: commentNumber }) {
   await fetchCommentPage(commentNumber)
 }
+
+onBeforeMount(fetch)
 </script>
 
 <template>
   <document-user-comments
     v-if="documentCommentsStore.card.visible"
+    v-model:comment="comment"
     no-sort
+    :disabled="isLoading"
     :count="count"
     :comments="virtualComments"
     @submit="createAndFetchComment"
