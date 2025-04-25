@@ -4,6 +4,12 @@ import { flatten, noop, range, uniqueId, values } from 'lodash'
 import { useApi } from '@/composables/useApi'
 import { useDocumentCommentsStore } from '@/stores/documentComments'
 
+/**
+ * Composable to handle document's comment.
+ *
+ * @param {Object} document - The document object or ref containing id and index.
+ * @returns {Object} Comment management methods and state.
+ */
 export function useDocumentComments(document) {
   const PAGE_SIZE = 50
 
@@ -11,9 +17,13 @@ export function useDocumentComments(document) {
   const documentCommentsStore = useDocumentCommentsStore()
   const api = useApi()
 
+  /** Stores comment pages fetched from the API. */
   const pages = reactive({})
+
+  /** Stores promises of ongoing comment page fetch requests. */
   const pagesPromises = reactive({})
 
+  /** Computed comment count for the document. */
   const count = computed({
     get() {
       const { id } = toValue(documentRef)
@@ -25,9 +35,13 @@ export function useDocumentComments(document) {
     }
   })
 
+  /** Estimated total number of comment pages. */
   const estimatedPagesCount = computed(() => (count.value ? Math.ceil(count.value / PAGE_SIZE) : null))
+
+  /** Flattened list of virtual comments used in placeholders. */
   const virtualComments = computed(() => flatten(values(virtualPages.value)))
 
+  /** Virtual representation of pages, used to manage placeholders before data loading. */
   const virtualPages = computed(() => {
     return range(1, estimatedPagesCount.value + 1).map((page) => {
       return (
@@ -42,6 +56,11 @@ export function useDocumentComments(document) {
     })
   })
 
+  /**
+   * Fetches and sets the total comments count from the API.
+   *
+   * @returns {Promise<number>} The total number of comments.
+   **/
   async function fetchCommentsCount() {
     try {
       const { id, index } = toValue(documentRef)
@@ -54,6 +73,11 @@ export function useDocumentComments(document) {
     return count.value
   }
 
+  /**
+   * Fetches the topic ID associated with the document.
+   *
+   * @returns {Promise<number|null>}
+   **/
   async function fetchTopicId() {
     const { id, index } = toValue(documentRef)
     const url = `/api/proxy/${index}/custom-fields-api/topics/${id}.json`
@@ -61,6 +85,12 @@ export function useDocumentComments(document) {
     return response?.topic_view_posts?.id ?? null
   }
 
+  /**
+   * Retrieves the category for comments associated with the document's index.
+   *
+   * @returns {Promise<Object|null>} The category object or null if not found.
+   * @throws {Error} If the API request fails.
+   **/
   async function getCategory() {
     const { index } = toValue(documentRef)
     const url = `api/proxy/${index}/g/${index}/categories.json`
@@ -70,6 +100,12 @@ export function useDocumentComments(document) {
     return dataconnectCategories.shift() ?? null
   }
 
+  /**
+   * Creates a category specifically for Datashare documents.
+   *
+   * @returns {Promise<Object|null>}
+   * @throws {Error} If the API request fails.
+   **/
   async function createCategory() {
     const { index } = toValue(documentRef)
     const data = {
@@ -89,17 +125,38 @@ export function useDocumentComments(document) {
     return response.category ?? null
   }
 
+  /**
+   * Retrieves or creates the appropriate category for the document.
+   *
+   * @returns {Promise<Object>} The category object.
+   * @throws {Error} If the API request fails.
+   **/
   async function getOrCreateCategory() {
-    const { id, index } = toValue(documentRef)
-    return (await getCategory({ index })) || (await createCategory({ id, index }))
+    return (await getCategory()) || (await createCategory())
   }
 
+  /**
+   * Creates a new comment or appends to an existing topic for the document.
+   *
+   * @param {string} raw - The raw content of the comment.
+   * @returns {Promise<Object>} The created or updated comment object.
+   * @throws {Error} If the API request fails.
+   **/
   async function createComment(raw = '') {
     const document = toValue(documentRef)
     const { id: category } = await getOrCreateCategory(document)
     return appendOrCreateTopic({ raw, category, document })
   }
 
+  /**
+   * Appends a comment to an existing topic.
+   *
+   * @param {object} options - Options for appending the comment.
+   * @param {string} options.raw - The raw content of the comment.
+   * @param {number} options.topicId - The ID of the topic to append to.
+   * @returns {Promise<Object>} The updated comment object.
+   * @throws {Error} If the API request fails.
+   **/
   async function appendToTopic({ raw, topicId } = {}) {
     const document = toValue(documentRef)
     const url = `/api/proxy/${document.index}/posts.json`
@@ -107,6 +164,15 @@ export function useDocumentComments(document) {
     return api.sendAction(url, { method: 'post', data })
   }
 
+  /**
+   * Creates a new topic for the document.
+   *
+   * @param {object} options - Options for creating the topic.
+   * @param {string} options.raw - The raw content of the comment.
+   * @param {number} options.category - The ID of the category for the topic.
+   * @returns {Promise<Object>} The created topic object.
+   * @throws {Error} If the API request fails.
+   **/
   async function createTopic({ raw, category } = {}) {
     const document = toValue(documentRef)
     const documentName = document.slicedName[document.slicedName.length - 1]
@@ -123,35 +189,66 @@ export function useDocumentComments(document) {
     return api.sendAction(url, { method: 'post', data })
   }
 
+  /**
+   * Determines whether to append to or create a topic based on its existence.
+   *
+   * @param {object} options - Options for appending or creating the topic.
+   * @param {string} options.raw - The raw content of the comment.
+   * @param {number} options.category - The ID of the category for the topic.
+   * @returns {Promise<Object>} The created or updated topic object.
+   * @throws {Error} If the API request fails.
+   **/
   async function appendOrCreateTopic({ raw, category } = {}) {
     const topicId = await fetchTopicId()
-    if (topicId) {
-      return appendToTopic({ raw, topicId })
-    } else {
-      return createTopic({ category, raw })
-    }
+    return topicId ? appendToTopic({ raw, topicId }) : createTopic({ category, raw })
   }
 
+  /**
+   * Fetches the specific comment page containing a given comment number.
+   *
+   * @param {number} commentNumber - The comment number to fetch.
+   * @returns {Promise<void>}
+   * @throws {Error} If the API request fails.
+   **/
   async function fetchCommentPage(commentNumber) {
     const page = Math.ceil(commentNumber / PAGE_SIZE)
     await fetchPageOnce(page)
   }
 
+  /**
+   * Fetches comments for a specific page.
+   *
+   * @param {number} page - The page number to fetch.
+   * @returns {Promise<Array>} The comments for the specified page.
+   * @throws {Error} If the API request fails.
+   **/
   async function fetchPage(page = 1) {
     const params = { page, limit: PAGE_SIZE }
     const { id, index } = toValue(documentRef)
     const url = `/api/proxy/${index}/custom-fields-api/topics/${id}.json`
-    // We store the promise in the pagesPromises object to avoid concurent requests for the same page.
     pagesPromises[page] = api.sendAction(url, { params }).catch(noop)
     pages[page] = (await pagesPromises[page])?.topic_view_posts?.post_stream?.posts ?? []
     return pages[page]
   }
 
+  /**
+   * Fetches comments for a page only once to avoid duplicate requests.
+   *
+   * @param {number} page - The page number to fetch.
+   * @returns {Promise<void>}
+   * @throws {Error} If the API request fails.
+   **/
   async function fetchPageOnce(page = 1) {
     if (page in pagesPromises) return
     await fetchPage(page)
   }
 
+  /**
+   * Fetches the last page of comments.
+   *
+   * @returns {Promise<Array>} The comments for the last page.
+   * @throws {Error} If the API request fails.
+   **/
   async function fetchLastPage() {
     return fetchPage(estimatedPagesCount.value)
   }
