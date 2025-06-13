@@ -25,11 +25,12 @@ await fetchCommentsCount()
 
 <template>
   <document-user-actions-entry
+    :active="documentCommentsStore.visible"
     :label="$t('commentsToggler.label', count, { n: count })"
     :value="String(count)"
     icon="chats-teardrop"
     :hide-tooltip="!shorterLabels"
     :shorter-label="shorterLabels"
-    @click="documentCommentsStore.toggleCard"
+    @click="documentCommentsStore.toggle()"
   />
 </template>

@@ -1,13 +1,21 @@
 import { defineStore } from 'pinia'
-import { reactive } from 'vue'
+import { computed, reactive } from 'vue'
+
+import { useCore } from '@/composables/useCore'
 
 export const useDocumentCommentsStore = defineStore('documentComments', () => {
-  const card = reactive({ visible: false })
+  const core = useCore()
   const countByDocument = reactive({})
+  const documentStore = core.stores.useDocumentStore()
 
-  function toggleCard() {
-    card.visible = !card.visible
+  const visible = computed({
+    get: () => documentStore.isUserActionVisible('COMMENTS'),
+    set: (value) => documentStore.toggleUserAction('COMMENTS', value)
+  })
+
+  function toggle(value = null) {
+    visible.value = value ?? !visible.value
   }
 
-  return { card, countByDocument, toggleCard }
+  return { visible, countByDocument, toggle }
 })

@@ -45,7 +45,8 @@ onBeforeMount(fetch)
 
 <template>
   <document-user-comments
-    v-if="documentCommentsStore.card.visible"
+    v-if="documentCommentsStore.visible"
+    v-model="documentCommentsStore.visible"
     v-model:comment="comment"
     no-sort
     :disabled="isLoading"
