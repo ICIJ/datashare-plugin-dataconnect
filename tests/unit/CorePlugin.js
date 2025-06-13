@@ -25,7 +25,8 @@ class CorePlugin {
             id: '1',
             index: 'banana-papers',
             slicedName: ['test.pdf']
-          }
+          },
+          isUserActionVisible: () => true
         }
       },
       useWaitStore() {
