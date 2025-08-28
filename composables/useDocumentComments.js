@@ -23,9 +23,7 @@ export function useDocumentComments(document) {
   /** Stores promises of ongoing comment page fetch requests. */
   const pagesPromises = reactive({})
 
-  const documentValue = computed(() =>
-    documentRef.value && toValue(documentRef) !== null ? toValue(documentRef) : null
-  )
+  const documentValue = computed(() =>  toValue(documentRef) ?? null)
   const docId = computed(() => documentValue.value?.id)
   const docIndex = computed(() => documentValue.value?.index)
 
