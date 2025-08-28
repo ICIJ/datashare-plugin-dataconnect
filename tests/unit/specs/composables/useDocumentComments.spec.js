@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
 
 import { useDocumentComments } from '@/composables/useDocumentComments'
-import { createPinia, defineStore, setActivePinia } from "pinia";
 
 const sendAction = vi.fn()
 
@@ -12,14 +12,24 @@ vi.mock('@/composables/useApi', () => {
 })
 
 vi.mock('@/composables/useCore', () => {
-  return {useCore:()=>{return {stores:{useDocumentStore:()=>{return {
-          document: {
-            id: '1',
-            index: 'banana-papers',
-            slicedName: ['test.pdf']
-          },
-          isUserActionVisible: () => true
-        }}}}}}
+  return {
+    useCore: () => {
+      return {
+        stores: {
+          useDocumentStore: () => {
+            return {
+              document: {
+                id: '1',
+                index: 'banana-papers',
+                slicedName: ['test.pdf']
+              },
+              isUserActionVisible: () => true
+            }
+          }
+        }
+      }
+    }
+  }
 })
 
 describe('useDocumentComments', () => {
@@ -38,6 +48,31 @@ describe('useDocumentComments', () => {
 
   afterEach(() => {
     vi.resetAllMocks()
+  })
+
+  describe('when document is undefined', () => {
+    it('should handle null document gracefully', () => {
+      const { count, virtualComments } = useDocumentComments()
+
+      expect(count.value).toBeNull()
+      expect(virtualComments.value).toEqual([])
+    })
+
+    it('should return empty array for fetchPage with null document', async () => {
+      const { fetchPage } = useDocumentComments()
+
+      const result = await fetchPage(1)
+
+      expect(result).toEqual([])
+      expect(sendAction).not.toHaveBeenCalled()
+    })
+
+    it('should reject createComment with null document', async () => {
+      const { createComment } = useDocumentComments()
+
+      await expect(createComment('Test comment')).rejects.toThrow('Document not found')
+      expect(sendAction).not.toHaveBeenCalled()
+    })
   })
 
   describe('fetchCommentsCount', () => {
@@ -66,8 +101,6 @@ describe('useDocumentComments', () => {
       expect(count.value).toBe(0)
     })
   })
-
-
 
   describe('fetchPage', () => {
     it('should fetch comments for a specific page', async () => {
@@ -144,17 +177,14 @@ describe('useDocumentComments', () => {
       await createComment('Test comment')
 
       // Check the last call for appendToTopic
-      expect(sendAction).toHaveBeenLastCalledWith(
-        `/api/proxy/${document.index}/posts.json`,
-        {
-          method: 'post',
-          data: {
-            raw: 'Test comment',
-            topic_id: 123,
-            skip_validations: true
-          }
+      expect(sendAction).toHaveBeenLastCalledWith(`/api/proxy/${document.index}/posts.json`, {
+        method: 'post',
+        data: {
+          raw: 'Test comment',
+          topic_id: 123,
+          skip_validations: true
         }
-      )
+      })
     })
 
     it('should create a comment by creating a new topic if no topic exists', async () => {
@@ -178,17 +208,14 @@ describe('useDocumentComments', () => {
       await createComment('Test comment')
 
       // Check the last call for createTopic
-      expect(sendAction).toHaveBeenLastCalledWith(
-        `/api/proxy/${document.index}/posts.json`,
-        {
-          method: 'post',
-          data: expect.objectContaining({
-            raw: expect.stringContaining('Test comment'),
-            category: 456,
-            datashare_document_id: document.id
-          })
-        }
-      )
+      expect(sendAction).toHaveBeenLastCalledWith(`/api/proxy/${document.index}/posts.json`, {
+        method: 'post',
+        data: expect.objectContaining({
+          raw: expect.stringContaining('Test comment'),
+          category: 456,
+          datashare_document_id: document.id
+        })
+      })
     })
   })
 
@@ -255,5 +282,4 @@ describe('useDocumentComments', () => {
       )
     })
   })
-
 })

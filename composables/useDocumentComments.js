@@ -23,15 +23,25 @@ export function useDocumentComments(document) {
   /** Stores promises of ongoing comment page fetch requests. */
   const pagesPromises = reactive({})
 
+  const documentValue = computed(() =>
+    documentRef.value && toValue(documentRef) !== null ? toValue(documentRef) : null
+  )
+  const docId = computed(() => documentValue.value?.id)
+  const docIndex = computed(() => documentValue.value?.index)
+
   /** Computed comment count for the document. */
   const count = computed({
     get() {
-      const { id } = toValue(documentRef)
-      return documentCommentsStore.countByDocument[id] ?? null
+      if (!docId.value) {
+        return null
+      }
+      return documentCommentsStore.countByDocument[docId.value] ?? null
     },
     set(value) {
-      const { id } = toValue(documentRef)
-      documentCommentsStore.countByDocument[id] = value
+      if (!docId.value) {
+        return null
+      }
+      documentCommentsStore.countByDocument[docId.value] = value
     }
   })
 
@@ -63,8 +73,10 @@ export function useDocumentComments(document) {
    **/
   async function fetchCommentsCount() {
     try {
-      const { id, index } = toValue(documentRef)
-      const url = `/api/proxy/${index}/custom-fields-api/topics/${id}/posts_count.json`
+      if (!docId.value || !docIndex.value) {
+        throw Error('Document not found')
+      }
+      const url = `/api/proxy/${docIndex.value}/custom-fields-api/topics/${docId.value}/posts_count.json`
       const response = await api.sendAction(url)
       count.value = response.posts_count
     } catch {
@@ -79,8 +91,10 @@ export function useDocumentComments(document) {
    * @returns {Promise<number|null>}
    **/
   async function fetchTopicId() {
-    const { id, index } = toValue(documentRef)
-    const url = `/api/proxy/${index}/custom-fields-api/topics/${id}.json`
+    if (!docId.value || !docIndex.value) {
+      return null
+    }
+    const url = `/api/proxy/${docIndex.value}/custom-fields-api/topics/${docId.value}.json`
     const response = await api.sendAction(url).catch(noop)
     return response?.topic_view_posts?.id ?? null
   }
@@ -92,8 +106,10 @@ export function useDocumentComments(document) {
    * @throws {Error} If the API request fails.
    **/
   async function getCategory() {
-    const { index } = toValue(documentRef)
-    const url = `api/proxy/${index}/g/${index}/categories.json`
+    if (!docIndex.value) {
+      return null
+    }
+    const url = `api/proxy/${docIndex.value}/g/${docIndex.value}/categories.json`
     const response = await api.sendAction(url).catch(noop)
     const categories = response.lists?.category_list?.categories ?? []
     const dataconnectCategories = categories.filter((category) => category.created_by_dataconnect)
@@ -107,21 +123,23 @@ export function useDocumentComments(document) {
    * @throws {Error} If the API request fails.
    **/
   async function createCategory() {
-    const { index } = toValue(documentRef)
+    if (!docIndex.value) {
+      return null
+    }
     const data = {
-      name: `Datashare Documents for ${index}`,
+      name: `Datashare Documents for ${docIndex.value}`,
       color: 'BF1E2E',
       text_color: 'FFFFFF',
       permissions: {
-        [index]: 1
+        [docIndex.value]: 1
       },
       custom_fields: {
         created_by_dataconnect: 'true'
       }
     }
 
-    const url = `/api/proxy/${index}/categories.json`
-    const response = await api.sendAction(url, { method: 'post', data })
+    const url = `/api/proxy/${docIndex.value}/categories.json`
+    const response = await api.sendAction(url, { method: 'post', data }).catch(noop)
     return response.category ?? null
   }
 
@@ -143,8 +161,10 @@ export function useDocumentComments(document) {
    * @throws {Error} If the API request fails.
    **/
   async function createComment(raw = '') {
-    const document = toValue(documentRef)
-    const { id: category } = await getOrCreateCategory(document)
+    if (!documentValue.value) {
+      return Promise.reject(new Error('Document not found'))
+    }
+    const { id: category } = await getOrCreateCategory()
     return appendOrCreateTopic({ raw, category, document })
   }
 
@@ -158,8 +178,10 @@ export function useDocumentComments(document) {
    * @throws {Error} If the API request fails.
    **/
   async function appendToTopic({ raw, topicId } = {}) {
-    const document = toValue(documentRef)
-    const url = `/api/proxy/${document.index}/posts.json`
+    if (!docIndex.value) {
+      return Promise.reject(new Error('Document not found'))
+    }
+    const url = `/api/proxy/${docIndex.value}/posts.json`
     const data = { raw, topic_id: topicId, skip_validations: true }
     return api.sendAction(url, { method: 'post', data })
   }
@@ -174,7 +196,10 @@ export function useDocumentComments(document) {
    * @throws {Error} If the API request fails.
    **/
   async function createTopic({ raw, category } = {}) {
-    const document = toValue(documentRef)
+    if (!documentValue.value) {
+      return Promise.reject(new Error('Document not found'))
+    }
+    const document = documentValue.value
     const documentName = document.slicedName[document.slicedName.length - 1]
     const url = `/api/proxy/${document.index}/posts.json`
     const data = {
@@ -223,9 +248,11 @@ export function useDocumentComments(document) {
    * @throws {Error} If the API request fails.
    **/
   async function fetchPage(page = 1) {
+    if (!docIndex.value || !docId.value) {
+      return []
+    }
+    const url = `/api/proxy/${docIndex.value}/custom-fields-api/topics/${docId.value}.json`
     const params = { page, limit: PAGE_SIZE }
-    const { id, index } = toValue(documentRef)
-    const url = `/api/proxy/${index}/custom-fields-api/topics/${id}.json`
     pagesPromises[page] = api.sendAction(url, { params }).catch(noop)
     pages[page] = (await pagesPromises[page])?.topic_view_posts?.post_stream?.posts ?? []
     return pages[page]
