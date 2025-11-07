@@ -2,8 +2,8 @@ import { computed, toRef, toValue, reactive } from 'vue'
 import { flatten, noop, range, uniqueId, values } from 'lodash'
 
 import { useApi } from '@/composables/useApi'
+import { useCore } from '@/composables/useCore'
 import { useDocumentCommentsStore } from '@/stores/documentComments'
-import { useCore } from './useCore'
 
 /**
  * Composable to handle document's comment.
