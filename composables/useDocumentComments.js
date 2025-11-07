@@ -75,6 +75,18 @@ export function useDocumentComments(document) {
     return `${protocol}//${host}/${href}`
   })
 
+  /** Asserts that the document exists.
+   *
+   * @throws {Error} If the document does not exist.
+   * @returns {boolean} True if the document exists.
+   **/
+  function assertDocumentExists() {
+    if (docId.value && docIndex.value) {
+      return true
+    }
+    throw new Error('Document not found')
+  }
+
   /**
    * Fetches and sets the total comments count from the API.
    *
@@ -82,9 +94,7 @@ export function useDocumentComments(document) {
    **/
   async function fetchCommentsCount() {
     try {
-      if (!docId.value || !docIndex.value) {
-        throw Error('Document not found')
-      }
+      assertDocumentExists()
       const url = `/api/proxy/${docIndex.value}/custom-fields-api/topics/${docId.value}/posts_count.json`
       const response = await api.sendAction(url)
       count.value = response.posts_count
@@ -100,12 +110,14 @@ export function useDocumentComments(document) {
    * @returns {Promise<number|null>}
    **/
   async function fetchTopicId() {
-    if (!docId.value || !docIndex.value) {
+    try {
+      assertDocumentExists()
+      const url = `/api/proxy/${docIndex.value}/custom-fields-api/topics/${docId.value}.json`
+      const response = await api.sendAction(url).catch(noop)
+      return response?.topic_view_posts?.id ?? null
+    } catch {
       return null
     }
-    const url = `/api/proxy/${docIndex.value}/custom-fields-api/topics/${docId.value}.json`
-    const response = await api.sendAction(url).catch(noop)
-    return response?.topic_view_posts?.id ?? null
   }
 
   /**
@@ -115,14 +127,16 @@ export function useDocumentComments(document) {
    * @throws {Error} If the API request fails.
    **/
   async function getCategory() {
-    if (!docIndex.value) {
+    try {
+      assertDocumentExists()
+      const url = `api/proxy/${docIndex.value}/g/${docIndex.value}/categories.json`
+      const response = await api.sendAction(url).catch(noop)
+      const categories = response.categories ?? response.lists?.category_list?.categories ?? []
+      const dataconnectCategories = categories.filter((category) => category.created_by_dataconnect)
+      return dataconnectCategories.shift() ?? null
+    } catch {
       return null
     }
-    const url = `api/proxy/${docIndex.value}/g/${docIndex.value}/categories.json`
-    const response = await api.sendAction(url).catch(noop)
-    const categories = response.categories ?? response.lists?.category_list?.categories ?? []
-    const dataconnectCategories = categories.filter((category) => category.created_by_dataconnect)
-    return dataconnectCategories.shift() ?? null
   }
 
   /**
@@ -132,9 +146,6 @@ export function useDocumentComments(document) {
    * @throws {Error} If the API request fails.
    **/
   async function createCategory() {
-    if (!docIndex.value) {
-      return null
-    }
     const data = {
       name: `Datashare Documents for ${docIndex.value}`,
       color: 'BF1E2E',
@@ -170,6 +181,7 @@ export function useDocumentComments(document) {
    * @throws {Error} If the API request fails.
    **/
   async function createComment(raw = '') {
+    assertDocumentExists()
     const { id: category } = await getOrCreateCategory()
     return appendOrCreateTopic({ raw, category, document })
   }
@@ -184,9 +196,7 @@ export function useDocumentComments(document) {
    * @throws {Error} If the API request fails.
    **/
   async function appendToTopic({ raw, topicId } = {}) {
-    if (!docIndex.value) {
-      return Promise.reject(new Error('Document not found'))
-    }
+    assertDocumentExists()
     const url = `/api/proxy/${docIndex.value}/posts.json`
     const data = { raw, topic_id: topicId, skip_validations: true }
     return api.sendAction(url, { method: 'post', data })
@@ -202,6 +212,7 @@ export function useDocumentComments(document) {
    * @throws {Error} If the API request fails.
    **/
   async function createTopic({ raw, category } = {}) {
+    assertDocumentExists()
     const document = toValue(documentRef)
     const url = `/api/proxy/${document.index}/posts.json`
     const data = {
@@ -253,14 +264,16 @@ export function useDocumentComments(document) {
    * @throws {Error} If the API request fails.
    **/
   async function fetchPage(page = 1) {
-    if (!docIndex.value || !docId.value) {
+    try {
+      assertDocumentExists()
+      const url = `/api/proxy/${docIndex.value}/custom-fields-api/topics/${docId.value}.json`
+      const params = { page, limit: PAGE_SIZE }
+      pagesPromises[page] = api.sendAction(url, { params }).catch(noop)
+      pages[page] = (await pagesPromises[page])?.topic_view_posts?.post_stream?.posts ?? []
+      return pages[page]
+    } catch {
       return []
     }
-    const url = `/api/proxy/${docIndex.value}/custom-fields-api/topics/${docId.value}.json`
-    const params = { page, limit: PAGE_SIZE }
-    pagesPromises[page] = api.sendAction(url, { params }).catch(noop)
-    pages[page] = (await pagesPromises[page])?.topic_view_posts?.post_stream?.posts ?? []
-    return pages[page]
   }
 
   /**

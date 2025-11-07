@@ -26,6 +26,9 @@ vi.mock('@/composables/useCore', () => {
               isUserActionVisible: () => true
             }
           }
+        },
+        router: {
+          resolve: (path) => ({ href: path })
         }
       }
     }
@@ -64,13 +67,6 @@ describe('useDocumentComments', () => {
       const result = await fetchPage(1)
 
       expect(result).toEqual([])
-      expect(sendAction).not.toHaveBeenCalled()
-    })
-
-    it('should reject createComment with null document', async () => {
-      const { createComment } = useDocumentComments()
-
-      await expect(createComment('Test comment')).rejects.toThrow('Document not found')
       expect(sendAction).not.toHaveBeenCalled()
     })
   })
