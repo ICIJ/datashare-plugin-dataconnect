@@ -24,15 +24,17 @@ const classList = computed(() => {
 })
 
 const cooked = computed(() => {
-  const { cooked, full_url: fullUrl } = comment
-  const { origin } = new URL(fullUrl)
-  return cooked
-    .split('src="//')
-    .join(`src="${window.location.protocol}//`)
-    .split('src="/')
-    .join(`src="${origin}/`)
-    .split('href="/')
-    .join(`target="_blank" href="${origin}/`)
+  const { host: discourseHost } = new URL(comment.full_url)
+  const { host: datashareHost, protocol: datashareProtocol } = window.location
+  return (
+    comment.cooked
+      // Fix links to Datashare to include the protocol
+      .split(`src="//${datashareHost}/`)
+      .join(`src="${datashareProtocol}//${datashareHost}/`)
+      // Add a target blank to links to Discourse
+      .split(`href="//${discourseHost}/`)
+      .join(`target="_blank" href="//${discourseHost}/`)
+  )
 })
 </script>
 

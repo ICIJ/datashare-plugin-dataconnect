@@ -71,7 +71,8 @@ export function useDocumentComments(document) {
     const name = 'document-standalone'
     const { routerParams: params } = toValue(documentRef)
     const { href } = core.router.resolve({ name, params })
-    return window.location.origin + href
+    const { protocol, host } = window.location
+    return `${protocol}//${host}/${href}`
   })
 
   /**
