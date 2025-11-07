@@ -159,9 +159,6 @@ export function useDocumentComments(document) {
    * @throws {Error} If the API request fails.
    **/
   async function createComment(raw = '') {
-    if (!documentValue.value) {
-      return Promise.reject(new Error('Document not found'))
-    }
     const { id: category } = await getOrCreateCategory()
     return appendOrCreateTopic({ raw, category, document })
   }
@@ -194,19 +191,18 @@ export function useDocumentComments(document) {
    * @throws {Error} If the API request fails.
    **/
   async function createTopic({ raw, category } = {}) {
-    if (!documentValue.value) {
-      return Promise.reject(new Error('Document not found'))
-    }
-    const document = documentValue.value
-    const documentName = document.slicedName[document.slicedName.length - 1]
+    const document = toValue(documentRef)
     const url = `/api/proxy/${document.index}/posts.json`
     const data = {
-      raw: raw + `\n\nFind the document here: [${documentName}](${window.location})`,
+      raw: raw + `\n\nFind the document here: [${document.title}](${window.location})`,
       skip_validations: true,
-      title: `${documentName} - #${document.id.substring(0, 7)}`,
+      title: `${document.title} - #${document.id.substring(0, 7)}`,
       category,
       archetype: 'regular',
-      datashare_document_id: document.id
+      datashare_document_id: document.id,
+      datashare_document_index: document.index,
+      datashare_document_routing: document.routing,
+      datashare_document_title: document.title
     }
 
     return api.sendAction(url, { method: 'post', data })
