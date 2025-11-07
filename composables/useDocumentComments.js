@@ -109,7 +109,7 @@ export function useDocumentComments(document) {
     }
     const url = `api/proxy/${docIndex.value}/g/${docIndex.value}/categories.json`
     const response = await api.sendAction(url).catch(noop)
-    const categories = response.lists?.category_list?.categories ?? []
+    const categories = response.categories ?? response.lists?.category_list?.categories ?? []
     const dataconnectCategories = categories.filter((category) => category.created_by_dataconnect)
     return dataconnectCategories.shift() ?? null
   }
