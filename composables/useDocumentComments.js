@@ -205,8 +205,8 @@ export function useDocumentComments(document) {
     const url = `/api/proxy/${document.index}/posts.json`
     const data = {
       raw: raw + `\n\nFind the document here: [${document.title}](${link.value})`,
+      title: document.title,
       skip_validations: true,
-      title: `${document.title} - #${document.id.substring(0, 7)}`,
       category,
       archetype: 'regular',
       datashare_document_id: document.id,
