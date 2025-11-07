@@ -24,7 +24,7 @@ const classList = computed(() => {
 })
 
 const cooked = computed(() => {
-  const { host: discourseHost } = new URL(comment.full_url)
+  const { host: discourseHost, protocol: discourseProtocol } = new URL(comment.full_url)
   const { host: datashareHost, protocol: datashareProtocol } = window.location
   return (
     comment.cooked
@@ -34,6 +34,9 @@ const cooked = computed(() => {
       // Add a target blank to links to Discourse
       .split(`href="//${discourseHost}/`)
       .join(`target="_blank" href="//${discourseHost}/`)
+      // Resolve Discourse relative links
+      .split('href="/')
+      .join(`target="_blank" href="${discourseProtocol}//${discourseHost}/`)
   )
 })
 </script>
