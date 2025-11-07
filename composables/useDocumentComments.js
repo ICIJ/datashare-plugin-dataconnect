@@ -3,6 +3,7 @@ import { flatten, noop, range, uniqueId, values } from 'lodash'
 
 import { useApi } from '@/composables/useApi'
 import { useDocumentCommentsStore } from '@/stores/documentComments'
+import { useCore } from './useCore'
 
 /**
  * Composable to handle document's comment.
@@ -16,6 +17,7 @@ export function useDocumentComments(document) {
   const documentRef = toRef(document)
   const documentCommentsStore = useDocumentCommentsStore()
   const api = useApi()
+  const core = useCore()
 
   /** Stores comment pages fetched from the API. */
   const pages = reactive({})
@@ -62,6 +64,14 @@ export function useDocumentComments(document) {
         })
       )
     })
+  })
+
+  /** Link to the document */
+  const link = computed(() => {
+    const name = 'document-standalone'
+    const { routerParams: params } = toValue(documentRef)
+    const { href } = core.router.resolve({ name, params })
+    return window.location.origin + href
   })
 
   /**
@@ -194,7 +204,7 @@ export function useDocumentComments(document) {
     const document = toValue(documentRef)
     const url = `/api/proxy/${document.index}/posts.json`
     const data = {
-      raw: raw + `\n\nFind the document here: [${document.title}](${window.location})`,
+      raw: raw + `\n\nFind the document here: [${document.title}](${link.value})`,
       skip_validations: true,
       title: `${document.title} - #${document.id.substring(0, 7)}`,
       category,
