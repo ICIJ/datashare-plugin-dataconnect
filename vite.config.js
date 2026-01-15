@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite'
 import path from 'path'
 import vue from '@vitejs/plugin-vue'
+import Icons from 'unplugin-icons/vite'
 import { viteExternalsPlugin } from 'vite-plugin-externals'
 
 export default ({ mode }) => {
@@ -11,12 +12,17 @@ export default ({ mode }) => {
       vue(),
       // Map Vue imports to the global `__VUE_SHARED__` and `__PINIA_SHARED__` objects on from `window`.
       // In test mode, Vue is provided by the test environment, so we don't need to externalize it.
-      mode !== 'test' ? viteExternalsPlugin({ vue: '__VUE_SHARED__', pinia: '__PINIA_SHARED__' }) : null
+      mode !== 'test' ? viteExternalsPlugin({ vue: '__VUE_SHARED__', pinia: '__PINIA_SHARED__' }) : null,
+      // The "Icons" plugin generates icon components from Iconify collections.
+      Icons({ scale: 1, compiler: 'vue3' })
     ],
     test: {
       globals: true,
       reporters: 'basic',
       environment: 'jsdom'
+    },
+    define: {
+      'process.env.NODE_ENV': JSON.stringify(mode)
     },
     build: {
       lib: {
