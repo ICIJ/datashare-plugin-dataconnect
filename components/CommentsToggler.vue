@@ -1,4 +1,5 @@
 <script setup>
+import IPhChatsTeardrop from '~icons/ph/chats-teardrop'
 import { useCore } from '@/composables/useCore'
 import { useCoreComponent } from '@/composables/useCoreComponent'
 import { useDocumentComments } from '@/composables/useDocumentComments'
@@ -28,7 +29,7 @@ await fetchCommentsCount()
     :active="documentCommentsStore.visible"
     :label="$t('commentsToggler.label', count, { n: count })"
     :value="String(count)"
-    icon="chats-teardrop"
+    :icon="IPhChatsTeardrop"
     :hide-tooltip="!shorterLabels"
     :shorter-label="shorterLabels"
     @click="documentCommentsStore.toggle()"
