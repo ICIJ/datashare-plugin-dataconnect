@@ -1,7 +1,7 @@
 {
   "name": "datashare-plugin-dataconnect",
   "description": "A Datashare plugin to create DataConnect, a bridge between Datashare and iHub (ICIJ Virtual Newsroom).",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "main": "dist/index.umd.cjs",
   "style": "dist/style.css",
   "type": "module",
@@ -22,8 +22,8 @@
     "geckodriver": "^4.4.1",
     "jsdom": "^24.1.0",
     "nightwatch": "^3.6.3",
-    "unplugin-icons": "^23.0.1",
     "sass": "^1.77.5",
+    "unplugin-icons": "^23.0.1",
     "vite": "^5.3.1",
     "vite-plugin-externals": "^0.6.2",
     "vitest": "^1.6.0"
